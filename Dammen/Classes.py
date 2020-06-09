@@ -61,11 +61,14 @@ def draw_board(board, scherm, lengte_vakje, hoogte_vakje, radius, border):
                 kleur_van_vakje = zwart_achtergrond
 
             vakje = pygame.draw.rect(scherm, kleur_van_vakje, [lengte_vakje * j, hoogte_vakje * i, lengte_vakje, hoogte_vakje])
+            plaats_vakje = vakje.center
+            pygame.draw.circle(scherm, wit_stuk, plaats_vakje, radius)
+
 
 
 def inner_loop():
     pygame.init()
-    afmetingen = [600, 600]
+    afmetingen = [900, 900]
     scherm = pygame.display.set_mode(afmetingen)
 
     pygame.display.set_caption("Checkers")
