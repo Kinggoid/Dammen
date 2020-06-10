@@ -41,9 +41,11 @@ board = setup()
 
 def stukken(spelbord):
     w1 = damsteen(1, 0, 'wit')
+    w2 = damsteen(0, 1, 'wit')
     z1 = damsteen(3, 2, 'zwart')
+    z2 = damsteen(5, 2, 'zwart')
 
-    lst = [w1, z1]
+    lst = [w1, z1, z2, w2]
     posities = []
 
     for i in lst:
@@ -74,7 +76,7 @@ def draw_board(board, scherm, lengte_vakje, hoogte_vakje):
                 stuk.draw(scherm, vakje.center)
 
 
-def checkIfFriendly(board, beurt, x, y):
+def checkIfFriendly(board, x, y):
     if board[y][x] == 0:
         return True
     return False
@@ -97,7 +99,7 @@ def damPakken(board, stuk, x, y):
     positie = stuk.positie
     team = stuk.team
 
-    if positie[1] + 2 == y:
+    if positie[1] + 2 == y or positie[1] - 2 == y:
         if positie[0] + 2 == x or positie[0] - 2 == x:
             tussenPlek = board[(y + positie[1]) // 2][(x + positie[0]) // 2]
             if tussenPlek != 0:
@@ -122,7 +124,7 @@ def inner_loop():
     damsteen.radius = afmetingen[0] // 20
     damsteen.rand = afmetingen[1] // 150
 
-    beurt = True
+    beurt = 1
 
     game_over = 0
     while game_over == 0:
@@ -142,34 +144,37 @@ def inner_loop():
                 old_y = pos[1] // hoogte
                 welkVak = board[old_y][old_x]
 
-                while True:
-                    event = pygame.event.wait()
-                    if event.type == pygame.QUIT:
-                        break
+                if beurt % 2 == welkVak.team:
+                    while True:
+                        event = pygame.event.wait()
+                        if event.type == pygame.QUIT:
+                            break
 
-                    if event.type == pygame.MOUSEBUTTONUP:
-                        new_pos = pygame.mouse.get_pos()
-                        new_x = new_pos[0] // breedte
-                        new_y = new_pos[1] // hoogte
-                        friendly = checkIfFriendly(board, beurt, new_x, new_y)
+                        if event.type == pygame.MOUSEBUTTONUP:
+                            new_pos = pygame.mouse.get_pos()
+                            new_x = new_pos[0] // breedte
+                            new_y = new_pos[1] // hoogte
+                            friendly = checkIfFriendly(board, new_x, new_y)
 
-                        if friendly:
-                            print(friendly)
-                            if damZetten(board, welkVak, new_x, new_y):
-                                print('jep')
-                                welkVak.positie[0] = new_x
-                                welkVak.positie[1] = new_y
+                            if friendly:
+                                if damZetten(board, welkVak, new_x, new_y):
+                                    welkVak.positie[0] = new_x
+                                    welkVak.positie[1] = new_y
 
-                                board[new_y][new_x], board[old_y][old_x] = welkVak, 0
-                                break
-                            elif damPakken(board, welkVak, new_x, new_y):
-                                board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
+                                    board[new_y][new_x], board[old_y][old_x] = welkVak, 0
 
-                                welkVak.positie[0] = new_x
-                                welkVak.positie[1] = new_y
+                                    beurt += 1
+                                    break
+                                elif damPakken(board, welkVak, new_x, new_y):
+                                    board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
 
-                                board[new_y][new_x], board[old_y][old_x] = welkVak, 0
-                                break
+                                    welkVak.positie[0] = new_x
+                                    welkVak.positie[1] = new_y
+
+                                    board[new_y][new_x], board[old_y][old_x] = welkVak, 0
+
+                                    beurt += 1
+                                    break
 
             clock.tick(10)
             draw_board(board, scherm, breedte, hoogte)
