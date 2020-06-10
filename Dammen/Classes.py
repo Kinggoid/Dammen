@@ -79,6 +79,13 @@ def draw_board(board, scherm, lengte_vakje, hoogte_vakje, radius, rand):
             kleur = 1
 
 
+def checkIfFriendly(board, friendly, x, y):
+    if board[y][x] in friendly:
+        return True
+    else:
+        return False
+
+
 def inner_loop():
     pygame.init()
     afmetingen = [900, 900]
@@ -100,23 +107,38 @@ def inner_loop():
             mouse_matrix_pos = mouse_pos[0] // breedte, mouse_pos[1] // hoogte
 
             clock = pygame.time.Clock()
-            clock.tick(10)
             draw_board(board, scherm, breedte, hoogte, afmetingen[0] // 20, afmetingen[1] // 200)
             pygame.display.flip()
             if event.type == pygame.QUIT:
                 game_over = True
 
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print('hoi')
                 pos = pygame.mouse.get_pos()
-                old_x = (pos[0] // breedte)
-                old_y = (pos[1] // hoogte)
+                old_x = pos[0] // breedte
+                old_y = pos[1] // hoogte
 
-                event = pygame.event.wait()
-                if event.type == pygame.MOUSEBUTTONUP:
-                    new_pos = pygame.mouse.get_pos()
-                    new_x = (new_pos[0] // breedte)
-                    new_y = (new_pos[1] // hoogte)
-                    print(old_x, old_y, new_x, new_y)
+                while True:
+                    event = pygame.event.wait()
+                    if event.type == pygame.QUIT:
+                        break
+
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        print('noice')
+                        new_pos = pygame.mouse.get_pos()
+                        new_x = new_pos[0] // breedte
+                        new_y = new_pos[1] // hoogte
+                        friendly = checkIfFriendly(board, white, old_x, old_y)
+                        if friendly:
+                            print('in friendly')
+                            board[new_y][new_x], board[old_y][old_x] = board[old_y][old_x], 0
+                            break
+    clock.tick(10)
+    draw_board(board, scherm, breedte, hoogte, afmetingen[0] // 20, afmetingen[1] // 200)
+
+    # Update screen with what we drew
+    pygame.display.flip()
+
 
 
 inner_loop()
