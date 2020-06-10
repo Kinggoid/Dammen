@@ -2,9 +2,12 @@ import pygame
 
 
 class damsteen:
-    def __init__(self, positie_x, positie_y, team):
-        self.positie_x = positie_x
-        self.positie_y = positie_y
+    radius = 0
+    rand = 0
+
+    def __init__(self, begin_x, begin_y, team):
+        self.begin_x = begin_x
+        self.begin_y = begin_y
         if team == 'wit' or team == 'Wit':
             self.team = True
         else:
@@ -13,6 +16,17 @@ class damsteen:
 
     def promoveren(self):
         self.king = True
+
+    def draw(self, scherm, plaats_vakje):
+        zwart = (0, 0, 0)
+        zwart_rand = (128, 128, 128)
+        wit_stuk = (250, 250, 250)
+
+        if self.team:
+            pygame.draw.circle(scherm, wit_stuk, plaats_vakje, self.radius)
+        else:
+            pygame.draw.circle(scherm, zwart, plaats_vakje, self.radius)
+            pygame.draw.circle(scherm, zwart_rand, plaats_vakje, self.radius, self.rand)
 
 
 def setup():
@@ -34,60 +48,61 @@ def stukken(spelbord):
     posities = []
 
     for i in lst:
-        posities.append([i.positie_x, i.positie_y])
+        posities.append([i.begin_x, i.begin_y])
 
     for i in range(0, len(posities)):
         if lst[i].team:
-            spelbord[int(posities[i][0])][int(posities[i][1])] = 1
+            spelbord[int(posities[i][0])][int(posities[i][1])] = lst[i]
         else:
-            spelbord[int(posities[i][0])][int(posities[i][1])] = 2
-
-
-stukken(board)
+            spelbord[int(posities[i][0])][int(posities[i][1])] = lst[i]
 
 
 
-def draw_board(board, scherm, lengte_vakje, hoogte_vakje, radius, rand):
+def draw_board(board, scherm, lengte_vakje, hoogte_vakje):
     zwart = (0, 0, 0)
-    zwart_rand = (128, 128, 128)
     wit_achtergrond = (150, 150, 150)
-    wit_stuk = (250, 250, 250)
-    goud = (255, 215, 0)
-
-    kleur = 1
 
     for i in range(0, 8):
         for j in range(0, 8):
-            if kleur == 1:
+            if (i + j) % 2 == 0:
                 kleur_van_vakje = wit_achtergrond
-                kleur = 0
             else:
                 kleur_van_vakje = zwart
-                kleur = 1
-
 
             vakje = pygame.draw.rect(scherm, kleur_van_vakje, [lengte_vakje * j, hoogte_vakje * i, lengte_vakje, hoogte_vakje])
-            plaats_vakje = vakje.center
-            if board[i][j] == 1:
-                pygame.draw.circle(scherm, wit_stuk, plaats_vakje, radius)
-            if board[i][j] == 2:
-                pygame.draw.circle(scherm, zwart, plaats_vakje, radius)
-                pygame.draw.circle(scherm, zwart_rand, plaats_vakje, radius, rand)
-        if kleur == 1:
-            kleur = 0
-        else:
-            kleur = 1
+            stuk = board[i][j]
+            if stuk != 0:
+                stuk.draw(scherm, vakje.center)
 
 
-def checkIfFriendly(board, friendly, x, y):
-    if board[y][x] in friendly:
+def checkIfFriendly(board, beurt, x, y):
+    if board[y][x] == 0:
+        return False
+    elif board[y][x].team == beurt:
         return True
     else:
         return False
 
 
+def zetten(board, stuk, x, y):
+    all_moves = []
+    if stuk.team:
+        if board[y + 1][x + 1] == 0:
+            all_moves.append([y+1, x + 1])
+        if board[y + 1][x - 1] == 0:
+            all_moves.append([y + 1, x - 1])
+
+    else:
+        if board[y - 1][x + 1] == 0:
+            all_moves.append([y - 1, x + 1])
+        if board[y - 1][x - 1] == 0:
+            all_moves.append([y - 1, x - 1])
+    return all_moves
+
+
 def inner_loop():
     pygame.init()
+    stukken(board)
     afmetingen = [900, 900]
     breedte = afmetingen[0] // 8
     hoogte = afmetingen[1] // 8
@@ -97,8 +112,10 @@ def inner_loop():
 
     clock = pygame.time.Clock()
 
-    white = [1, 3]
-    black = [2, 4]
+    damsteen.radius = afmetingen[0] // 20
+    damsteen.rand = afmetingen[1] // 150
+
+    beurt = True
 
     game_over = 0
     while game_over == 0:
@@ -107,7 +124,7 @@ def inner_loop():
             mouse_matrix_pos = mouse_pos[0] // breedte, mouse_pos[1] // hoogte
 
             clock = pygame.time.Clock()
-            draw_board(board, scherm, breedte, hoogte, afmetingen[0] // 20, afmetingen[1] // 200)
+            draw_board(board, scherm, breedte, hoogte)
             pygame.display.flip()
             if event.type == pygame.QUIT:
                 game_over = True
@@ -124,17 +141,24 @@ def inner_loop():
                         break
 
                     if event.type == pygame.MOUSEBUTTONUP:
-                        print('noice')
                         new_pos = pygame.mouse.get_pos()
                         new_x = new_pos[0] // breedte
                         new_y = new_pos[1] // hoogte
-                        friendly = checkIfFriendly(board, white, old_x, old_y)
+                        friendly = checkIfFriendly(board, beurt, old_x, old_y)
+
                         if friendly:
-                            print('in friendly')
-                            board[new_y][new_x], board[old_y][old_x] = board[old_y][old_x], 0
+
+                            moves = zetten(board, board[old_y][old_x], old_x, old_y)
+                            print(moves)
+
+                            if [new_y, new_x] in moves:
+                                board[new_y][new_x], board[old_y][old_x] = board[old_y][old_x], 0
+
                             break
+
+
     clock.tick(10)
-    draw_board(board, scherm, breedte, hoogte, afmetingen[0] // 20, afmetingen[1] // 200)
+    draw_board(board, scherm, breedte, hoogte)
 
     # Update screen with what we drew
     pygame.display.flip()
