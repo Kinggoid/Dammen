@@ -140,6 +140,7 @@ def inner_loop():
                 pos = pygame.mouse.get_pos()
                 old_x = pos[0] // breedte
                 old_y = pos[1] // hoogte
+                welkVak = board[old_y][old_x]
 
                 while True:
                     event = pygame.event.wait()
@@ -154,12 +155,20 @@ def inner_loop():
 
                         if friendly:
                             print(friendly)
-                            if damZetten(board, board[old_y][old_x], new_x, new_y):
+                            if damZetten(board, welkVak, new_x, new_y):
                                 print('jep')
-                                board[old_y][old_x].positie[0] = new_x
-                                board[old_y][old_x].positie[1] = new_y
+                                welkVak.positie[0] = new_x
+                                welkVak.positie[1] = new_y
 
-                                board[new_y][new_x], board[old_y][old_x] = board[old_y][old_x], 0
+                                board[new_y][new_x], board[old_y][old_x] = welkVak, 0
+                                break
+                            elif damPakken(board, welkVak, new_x, new_y):
+                                board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
+
+                                welkVak.positie[0] = new_x
+                                welkVak.positie[1] = new_y
+
+                                board[new_y][new_x], board[old_y][old_x] = welkVak, 0
                                 break
 
             clock.tick(10)
