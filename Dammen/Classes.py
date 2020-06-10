@@ -5,9 +5,8 @@ class damsteen:
     radius = 0
     rand = 0
 
-    def __init__(self, begin_x, begin_y, team):
-        self.begin_x = begin_x
-        self.begin_y = begin_y
+    def __init__(self, positie_x, positie_y, team):
+        self.positie = [positie_y, positie_x]
         if team == 'wit' or team == 'Wit':
             self.team = True
         else:
@@ -41,20 +40,20 @@ board = setup()
 
 
 def stukken(spelbord):
-    w1 = damsteen('0', '1', 'wit')
-    z1 = damsteen('7', '6', 'zwart')
+    w1 = damsteen(0, 1, 'wit')
+    z1 = damsteen(7, 6, 'zwart')
 
     lst = [w1, z1]
     posities = []
 
     for i in lst:
-        posities.append([i.begin_x, i.begin_y])
+        posities.append(i.positie)
 
     for i in range(0, len(posities)):
         if lst[i].team:
-            spelbord[int(posities[i][0])][int(posities[i][1])] = lst[i]
+            spelbord[int(posities[i][1])][int(posities[i][0])] = lst[i]
         else:
-            spelbord[int(posities[i][0])][int(posities[i][1])] = lst[i]
+            spelbord[int(posities[i][1])][int(posities[i][0])] = lst[i]
 
 
 
@@ -84,20 +83,28 @@ def checkIfFriendly(board, beurt, x, y):
         return False
 
 
-def zetten(board, stuk, x, y):
-    all_moves = []
+def damZetten(board, stuk, y, x):
+    positie = stuk.positie
     if stuk.team:
-        if board[y + 1][x + 1] == 0:
-            all_moves.append([y+1, x + 1])
-        if board[y + 1][x - 1] == 0:
-            all_moves.append([y + 1, x - 1])
-
+        if positie[0] + 1 == y:
+            if positie[1] + 1 == x or positie[1] - 1 == x:
+                return True
     else:
-        if board[y - 1][x + 1] == 0:
-            all_moves.append([y - 1, x + 1])
-        if board[y - 1][x - 1] == 0:
-            all_moves.append([y - 1, x - 1])
-    return all_moves
+        if positie[0] - 1 == y:
+            if positie[1] + 1 == x or positie[1] - 1 == x:
+                return True
+    return False
+
+
+def damPakken(board, stuk, x, y):
+    all_moves = []
+    team = stuk.team
+
+    if board[y + 1][x - 1] == 0:
+        pass
+    elif board[y + 1][x - 1].team != team and board[y + 2][x - 2] == 0:
+        all_moves.append([y + 2, x - 2])
+
 
 
 def inner_loop():
@@ -124,18 +131,17 @@ def inner_loop():
             mouse_matrix_pos = mouse_pos[0] // breedte, mouse_pos[1] // hoogte
 
             clock = pygame.time.Clock()
-            draw_board(board, scherm, breedte, hoogte)
-            pygame.display.flip()
+
             if event.type == pygame.QUIT:
                 game_over = True
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 print('hoi')
                 pos = pygame.mouse.get_pos()
-                old_x = pos[0] // breedte
-                old_y = pos[1] // hoogte
 
                 while True:
+                    old_x = pos[0] // breedte
+                    old_y = pos[1] // hoogte
                     event = pygame.event.wait()
                     if event.type == pygame.QUIT:
                         break
@@ -147,21 +153,21 @@ def inner_loop():
                         friendly = checkIfFriendly(board, beurt, old_x, old_y)
 
                         if friendly:
+                            if damZetten(board, board[old_y][old_x], new_x, new_y):
+                                print('jep')
+                                board[old_y][old_x].begin_x = new_x
+                                board[old_y][old_x].begin_y = new_y
 
-                            moves = zetten(board, board[old_y][old_x], old_x, old_y)
-                            print(moves)
-
-                            if [new_y, new_x] in moves:
                                 board[new_y][new_x], board[old_y][old_x] = board[old_y][old_x], 0
 
-                            break
+                                break
 
 
-    clock.tick(10)
-    draw_board(board, scherm, breedte, hoogte)
+        clock.tick(10)
+        draw_board(board, scherm, breedte, hoogte)
 
     # Update screen with what we drew
-    pygame.display.flip()
+        pygame.display.flip()
 
 
 
