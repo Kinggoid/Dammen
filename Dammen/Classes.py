@@ -35,10 +35,6 @@ def setup():
     return totaalbord
 
 
-board = setup()
-
-
-
 def stukken(spelbord):
     w1 = damsteen(1, 0, 'wit')
     w2 = damsteen(0, 1, 'wit')
@@ -56,6 +52,7 @@ def stukken(spelbord):
             spelbord[int(posities[i][1])][int(posities[i][0])] = lst[i]
         else:
             spelbord[int(posities[i][1])][int(posities[i][0])] = lst[i]
+    return lst
 
 
 
@@ -82,7 +79,7 @@ def checkIfFriendly(board, x, y):
     return False
 
 
-def damZetten(board, stuk, x, y):
+def damZetten(stuk, x, y):
     positie = stuk.positie
     if stuk.team:
         if positie[1] + 1 == y:
@@ -99,35 +96,35 @@ def damPakken(board, stuk, x, y):
     positie = stuk.positie
     team = stuk.team
 
-    if positie[1] + 2 == y or positie[1] - 2 == y:
-        if positie[0] + 2 == x or positie[0] - 2 == x:
-            tussenPlek = board[(y + positie[1]) // 2][(x + positie[0]) // 2]
-            if tussenPlek != 0:
-                if tussenPlek.team != team:
-                    return True
+    if 0 <= x <= 7 and 0 <= y <= 7:
+        if positie[1] + 2 == y or positie[1] - 2 == y:
+            if positie[0] + 2 == x or positie[0] - 2 == x:
+                tussen_plek = board[(y + positie[1]) // 2][(x + positie[0]) // 2]
+                if tussen_plek != 0:
+                    if tussen_plek.team != team:
+                        return True
     return False
 
 
-def nogEenKeerSpringen(board, stuk):
+def nogEenKeerSpringen(board, stuk, wil_je_een_lijst):
     positie = stuk.positie
-    team = stuk.team
+    x_sprongen = ['positie[0] + 2', 'positie[0] - 2']
+    y_sprongen = ['positie[1] + 2', 'positie[1] - 2']
 
-    x_sprongen = ['positie[0] + 1', 'positie[0] - 1']
-    y_sprongen = ['positie[1] + 1', 'positie[1] - 1']
+    alle_sprongen = []
 
     for i in x_sprongen:
         for j in y_sprongen:
             x = eval(i)
             y = eval(j)
-            if 7 >= x >= 0 and 7 >= y >= 0:
-                veld = board[y][x]
-                if veld != 0:
-                    if veld.team != team:
-                        sprong_x = (x - positie[0]) + x
-                        sprong_y = (y - positie[1]) + y
-                        if 7 >= sprong_x >= 0 and 7 >= sprong_y >= 0:
-                            if board[sprong_y][sprong_x] == 0:
-                                return True
+            if 0 <= x <= 7 and 0 <= y <= 7:
+                if board[y][x] == 0 and damPakken(board, stuk, x, y):
+                    if wil_je_een_lijst:
+                        alle_sprongen.append([x, y])
+                    else:
+                        return True
+    if wil_je_een_lijst:
+        return alle_sprongen
     return False
 
 
@@ -149,12 +146,94 @@ def einde(wit, zwart):
         return False
 
 
+def juisteStukken(stukken, beurt):
+    juiste_kleur_stukken = []
+
+    for i in stukken:
+        if i.team == beurt:
+            juiste_kleur_stukken.append(i)
+    return juiste_kleur_stukken
+
+
+def watKanJeZetten(board, stukken, beurt):
+    juiste_kleur_stukken = juisteStukken(stukken, beurt)
+    alle_zetten = []
+
+    team = juiste_kleur_stukken[0].team
+    if team:
+        vooruit = 1
+    else:
+        vooruit = -1
+
+    for i in juiste_kleur_stukken:
+        positie = i.positie
+        een_vooruit = positie[1] + vooruit
+        links_opzij = positie[0] - 1
+        rechts_opzij = positie[0] + 1
+
+        if 0 <= een_vooruit <= 7:
+            if 0 <= rechts_opzij <= 7:
+                if damZetten(i, rechts_opzij, een_vooruit):
+                    alle_zetten.append([rechts_opzij, een_vooruit])
+            if 0 <= links_opzij <= 7:
+                if damZetten(i, links_opzij, een_vooruit):
+                    alle_zetten.append([links_opzij, een_vooruit])
+    return alle_zetten
+
+
+def watKanJeSpringen(board, stukken, beurt):
+    juiste_kleur_stukken = juisteStukken(stukken, beurt)
+    alle_zetten = []
+
+    for stuk in juiste_kleur_stukken:
+        sprongen = nogEenKeerSpringen(board, stuk, True)
+        for sprong in sprongen:
+            alle_zetten.append(sprong)
+    return alle_zetten
+
+
+def KanJeZetten(board, stukken, beurt):
+    juiste_kleur_stukken = juisteStukken(stukken, beurt)
+
+    team = juiste_kleur_stukken[0].team
+    if team:
+        vooruit = 1
+    else:
+        vooruit = -1
+
+    for i in juiste_kleur_stukken:
+        positie = i.positie
+        een_vooruit = positie[1] + vooruit
+        links_opzij = positie[0] - 1
+        rechts_opzij = positie[0] + 1
+
+        if 0 <= een_vooruit <= 7:
+            if 0 <= rechts_opzij <= 7:
+                if board[een_vooruit][links_opzij] == 0 and damZetten(i, rechts_opzij, een_vooruit):
+                    return True
+            if 0 <= links_opzij <= 7:
+                if board[een_vooruit][rechts_opzij] == 0 and damZetten(i, links_opzij, een_vooruit):
+                    return True
+    return False
+
+
+def KanJeSpringen(board, stukken, beurt):
+    juiste_kleur_stukken = juisteStukken(stukken, beurt)
+
+    for stuk in juiste_kleur_stukken:
+        sprongen = nogEenKeerSpringen(board, stuk, False)
+        if sprongen:
+            return True
+    return False
+
+
 def inner_loop():
     pygame.init()
-    stukken(board)
-    aantalWitteStukken = 2
-    aantalZwarteStukken = 2
-    alleenSprong = False
+    board = setup()
+    pieces = stukken(board)
+    aantal_witte_stukken = 2
+    aantal_zwarte_stukken = 2
+    alleen_sprong = False
     afmetingen = [900, 900]
     breedte = afmetingen[0] // 8
     hoogte = afmetingen[1] // 8
@@ -178,9 +257,19 @@ def inner_loop():
             if event.type == pygame.QUIT:
                 game_over = True
 
-            if einde(aantalWitteStukken, aantalZwarteStukken):
+            if einde(aantal_witte_stukken, aantal_zwarte_stukken):
                 game_over = True
                 break
+
+            if not watKanJeZetten(board, pieces, beurt):
+                if not watKanJeSpringen(board, pieces, beurt):
+                    if beurt:
+                        print('Zwart wint')
+                    else:
+                        print('Wit wint')
+                    game_over = True
+                    break
+
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 print('hoi')
@@ -196,7 +285,6 @@ def inner_loop():
                     while True:
                         event = pygame.event.wait()
 
-
                         if event.type == pygame.QUIT:
                             break
 
@@ -207,7 +295,8 @@ def inner_loop():
                             friendly = checkIfFriendly(board, new_x, new_y)
 
                             if friendly:
-                                if not alleenSprong and damZetten(board, welkVak, new_x, new_y):
+                                if not alleen_sprong and damZetten(welkVak, new_x, new_y):
+
 
                                     welkVak.positie[0] = new_x
                                     welkVak.positie[1] = new_y
@@ -217,7 +306,6 @@ def inner_loop():
                                     beurt = draaiDeBeurt(beurt)
                                     break
                                 elif damPakken(board, welkVak, new_x, new_y):
-                                    print('ben hier')
                                     board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
 
                                     welkVak.positie[0] = new_x
@@ -226,17 +314,15 @@ def inner_loop():
                                     board[new_y][new_x], board[old_y][old_x] = welkVak, 0
 
                                     if welkVak.team:
-                                        aantalZwarteStukken -= 1
+                                        aantal_zwarte_stukken -= 1
                                     else:
-                                        aantalWitteStukken -= 1
+                                        aantal_witte_stukken -= 1
 
-
-                                    if nogEenKeerSpringen(board, welkVak):
-                                        alleenSprong = True
-                                        print('in het hol van de leeuw')
+                                    if nogEenKeerSpringen(board, welkVak, False):
+                                        alleen_sprong = True
                                         break
 
-                                    alleenSprong = False
+                                    alleen_sprong = False
                                     beurt = draaiDeBeurt(beurt)
                                     break
 
