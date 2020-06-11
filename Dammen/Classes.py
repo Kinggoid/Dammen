@@ -270,7 +270,8 @@ def koningStappen(board, stuk):
 
     for i in directions:
         for j in i:
-            if board[]
+            if board:
+                pass
 
 
     return alle_mogelijke_posities
@@ -284,7 +285,10 @@ def innerLoop():
     pieces = stukken(board)
     aantal_witte_stukken = 2
     aantal_zwarte_stukken = 2
+
     alleen_sprong = False
+    stuk_dat_moet_springen = 0
+
     afmetingen = [900, 900]
     breedte = afmetingen[0] // 8
     hoogte = afmetingen[1] // 8
@@ -321,7 +325,6 @@ def innerLoop():
                     game_over = True
                     break
 
-
             if event.type == pygame.MOUSEBUTTONDOWN:
                 print('hoi')
                 pos = pygame.mouse.get_pos()
@@ -331,6 +334,10 @@ def innerLoop():
 
                 if welkVak == 0:
                     break
+
+                if stuk_dat_moet_springen != 0:
+                    if stuk_dat_moet_springen != welkVak:
+                        break
 
                 if beurt % 2 == welkVak.team:
                     while True:
@@ -344,6 +351,10 @@ def innerLoop():
                             new_x = new_pos[0] // breedte
                             new_y = new_pos[1] // hoogte
                             friendly = checkIfFriendly(board, new_x, new_y)
+
+                            if not alleen_sprong:
+                                if KanJeSpringen(board, pieces, beurt):
+                                    alleen_sprong = True
 
                             if friendly:
                                 if not alleen_sprong and damZetten(welkVak, new_x, new_y):
@@ -371,9 +382,11 @@ def innerLoop():
 
                                     if nogEenKeerSpringen(board, welkVak, False):
                                         alleen_sprong = True
+                                        stuk_dat_moet_springen = welkVak
                                         break
 
                                     alleen_sprong = False
+                                    stuk_dat_moet_springen = 0
                                     promoveer(welkVak, alleen_sprong)
                                     beurt = draaiDeBeurt(beurt)
                                     break
