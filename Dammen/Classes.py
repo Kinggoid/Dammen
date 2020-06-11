@@ -16,16 +16,34 @@ class damsteen:
     def promoveren(self):
         self.king = True
 
-    def draw(self, scherm, plaats_vakje):
+    def draw_dam(self, scherm, plaats_vakje):
         zwart = (0, 0, 0)
         zwart_rand = (128, 128, 128)
         wit_stuk = (250, 250, 250)
 
         if self.team:
             pygame.draw.circle(scherm, wit_stuk, plaats_vakje, self.radius)
+            pygame.draw.circle(scherm, zwart_rand, plaats_vakje, self.radius, self.rand)
         else:
             pygame.draw.circle(scherm, zwart, plaats_vakje, self.radius)
             pygame.draw.circle(scherm, zwart_rand, plaats_vakje, self.radius, self.rand)
+
+    def draw_king(self, scherm, plaats_vakje):
+        zwart = (0, 0, 0)
+        zwart_rand = (128, 128, 128)
+        wit_stuk = (250, 250, 250)
+        goud = (255, 215, 0)
+
+        if self.team:
+            pygame.draw.circle(scherm, wit_stuk, plaats_vakje, self.radius)
+            pygame.draw.circle(scherm, goud, plaats_vakje, int(self.radius // 3))
+            pygame.draw.circle(scherm, goud, plaats_vakje, int(self.radius // 1.5), int(self.rand // 1.5))
+            pygame.draw.circle(scherm, zwart_rand, plaats_vakje, self.radius, self.rand)
+        else:
+            pygame.draw.circle(scherm, zwart, plaats_vakje, self.radius)
+            pygame.draw.circle(scherm, zwart_rand, plaats_vakje, self.radius, self.rand)
+            pygame.draw.circle(scherm, goud, plaats_vakje, int(self.radius // 3))
+            pygame.draw.circle(scherm, goud, plaats_vakje, int(self.radius // 1.5), int(self.rand // 1.5))
 
 
 def setup():
@@ -38,8 +56,8 @@ def setup():
 def stukken(spelbord):
     w1 = damsteen(1, 0, 'wit')
     w2 = damsteen(0, 1, 'wit')
-    z1 = damsteen(3, 2, 'zwart')
-    z2 = damsteen(5, 2, 'zwart')
+    z1 = damsteen(6, 7, 'zwart')
+    z2 = damsteen(4, 7, 'zwart')
 
     lst = [w1, z1, z2, w2]
     posities = []
@@ -58,19 +76,22 @@ def stukken(spelbord):
 
 def draw_board(board, scherm, lengte_vakje, hoogte_vakje):
     zwart = (0, 0, 0)
-    wit_achtergrond = (150, 150, 150)
+    wit = (220, 220, 220)
 
     for i in range(0, 8):
         for j in range(0, 8):
             if (i + j) % 2 == 0:
-                kleur_van_vakje = wit_achtergrond
+                kleur_van_vakje = wit
             else:
                 kleur_van_vakje = zwart
 
             vakje = pygame.draw.rect(scherm, kleur_van_vakje, [lengte_vakje * j, hoogte_vakje * i, lengte_vakje, hoogte_vakje])
             stuk = board[i][j]
             if stuk != 0:
-                stuk.draw(scherm, vakje.center)
+                if stuk.king:
+                    stuk.draw_king(scherm, vakje.center)
+                else:
+                    stuk.draw_dam(scherm, vakje.center)
 
 
 def checkIfFriendly(board, x, y):
@@ -227,7 +248,24 @@ def KanJeSpringen(board, stukken, beurt):
     return False
 
 
-def inner_loop():
+def promoveer(stuk, springen):
+    positie = stuk.positie
+    if stuk.team:
+        if positie[1] == 7 and not springen:
+            stuk.promoveren()
+    else:
+        if positie[1] == 0 and not springen:
+            stuk.promoveren()
+
+
+def koningStappen(board, stuk):
+    team = stuk.team
+    positie = stuk.positie
+
+    
+
+
+def innerLoop():
     pygame.init()
     board = setup()
     pieces = stukken(board)
@@ -296,12 +334,12 @@ def inner_loop():
 
                             if friendly:
                                 if not alleen_sprong and damZetten(welkVak, new_x, new_y):
-
-
                                     welkVak.positie[0] = new_x
                                     welkVak.positie[1] = new_y
 
                                     board[new_y][new_x], board[old_y][old_x] = welkVak, 0
+
+                                    promoveer(welkVak, alleen_sprong)
 
                                     beurt = draaiDeBeurt(beurt)
                                     break
@@ -323,6 +361,7 @@ def inner_loop():
                                         break
 
                                     alleen_sprong = False
+                                    promoveer(welkVak, alleen_sprong)
                                     beurt = draaiDeBeurt(beurt)
                                     break
 
@@ -334,4 +373,4 @@ def inner_loop():
 
 
 
-inner_loop()
+innerLoop()
