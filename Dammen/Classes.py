@@ -260,31 +260,32 @@ def promoveer(stuk, springen):
 
 def koningStappen(board, stuk):
     team = stuk.team
-    x = stuk.positie[0]
-    y = stuk.positie[1]
 
     alle_mogelijke_posities = []
     stukken_die_gepakt_kunnen_worden = []
 
-    directions_y = [range(y + 1, 8), range(y - 1, -1, -1)]
-    directions_x = [range(x + 1, 8), range(x - 1, -1, -1)]
-
-    for i in directions_y:
-        for j in directions_x:
-            for y in i:
-                for x in j:
-                    print(x, y)
-                    plek = board[y][x]
-                    if plek != 0:
-                        if plek.team != team:
-                            stukken_die_gepakt_kunnen_worden.append([x, y])
-                        break
+    for i in [-1, 1]:
+        for j in [-1, 1]:
+            x = stuk.positie[0]
+            y = stuk.positie[1]
+            while True:
+                x += i
+                y += j
+                if 0 <= x <= 7 and 0 <= y <= 7:
+                    if board[y][x] != 0:
+                        if board[y][x].team != stuk.team:
+                            x += i
+                            y += j
+                            if 0 <= x <= 7 and 0 <= y <= 7:
+                                if board[y][x] == 0:
+                                    stukken_die_gepakt_kunnen_worden.append([x, y])
+                                    break
                     else:
                         alle_mogelijke_posities.append([x, y])
+                else:
+                    break
 
-    # als er shit zit in stukken_die... dan gaan we hier kijken (of we verwijzen naar een andere def die dat doet) of het vak daarna leeg is.
-
-    return alle_mogelijke_posities
+    return [alle_mogelijke_posities, stukken_die_gepakt_kunnen_worden]
 
 
 def innerLoop():
@@ -324,21 +325,21 @@ def innerLoop():
                 game_over = True
                 break
 
-            if not watKanJeZetten(board, pieces, beurt):
-                if not watKanJeSpringen(board, pieces, beurt):
-                    if beurt:
-                        print('Zwart wint')
-                    else:
-                        print('Wit wint')
-                    game_over = True
-                    break
-
             if event.type == pygame.MOUSEBUTTONDOWN:
                 print('hoi')
                 pos = pygame.mouse.get_pos()
                 old_x = pos[0] // breedte
                 old_y = pos[1] // hoogte
                 welkVak = board[old_y][old_x]
+
+                if not watKanJeZetten(board, pieces, beurt) and not welkVak.king:
+                    if not watKanJeSpringen(board, pieces, beurt):
+                        if beurt:
+                            print('Zwart wint')
+                        else:
+                            print('Wit wint')
+                        game_over = True
+                        break
 
                 if welkVak == 0:
                     break
@@ -354,6 +355,9 @@ def innerLoop():
                         if event.type == pygame.QUIT:
                             break
 
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            break
+
                         if event.type == pygame.MOUSEBUTTONUP:
                             new_pos = pygame.mouse.get_pos()
                             new_x = new_pos[0] // breedte
@@ -362,16 +366,46 @@ def innerLoop():
 
                             if friendly:
                                 if welkVak.king:
-                                    print('hey')
                                     zetten = koningStappen(board, welkVak)
-                                    print(len(zetten))
-                                    if [new_x, new_y] in zetten:
+
+                                    if zetten[1]:
+                                        if [new_x, new_y] in zetten[1]:
+                                            hoever_weg = [welkVak.positie[0] - new_x, welkVak.positie[1] - new_y]
+                                            print(welkVak.positie)
+                                            print(hoever_weg)
+
+                                            for i in range(0, 2):
+                                                if hoever_weg[i] > 0:
+                                                    hoever_weg[i] = -(hoever_weg[i] - 1) + welkVak.positie[i]
+                                                else:
+                                                    hoever_weg[i] = -(hoever_weg[i] + 1) + welkVak.positie[i]
+
+                                            print(hoever_weg)
+
+                                            pieces.remove(board[hoever_weg[1]][hoever_weg[0]])
+                                            board[hoever_weg[1]][hoever_weg[0]] = 0
+
+                                            if welkVak.team:
+                                                aantal_zwarte_stukken -= 1
+                                            else:
+                                                aantal_witte_stukken -= 1
+
+
+                                            welkVak.positie[0] = new_x
+                                            welkVak.positie[1] = new_y
+
+                                            board[new_y][new_x], board[old_y][old_x] = welkVak, 0
+                                            beurt = draaiDeBeurt(beurt)
+
+
+
+                                    elif [new_x, new_y] in zetten[0]:
                                         welkVak.positie[0] = new_x
                                         welkVak.positie[1] = new_y
 
                                         board[new_y][new_x], board[old_y][old_x] = welkVak, 0
                                         beurt = draaiDeBeurt(beurt)
-                                        break
+                                    break
 
                                 else:
                                     if not alleen_sprong:
@@ -389,6 +423,7 @@ def innerLoop():
                                         beurt = draaiDeBeurt(beurt)
                                         break
                                     elif damPakken(board, welkVak, new_x, new_y):
+                                        pieces.remove(board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2])
                                         board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
 
                                         welkVak.positie[0] = new_x
