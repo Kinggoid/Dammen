@@ -260,9 +260,22 @@ def promoveer(stuk, springen):
 
 def koningStappen(board, stuk):
     team = stuk.team
-    positie = stuk.positie
+    x = stuk.positie[0]
+    y = stuk.positie[1]
 
-    
+    alle_mogelijke_posities = []
+
+    directions = [range(y + 1, 8), range(y + 1, 8), range(y - 1, -1, -1), range(y - 1, -1, -1)]
+    directions_x = [range(x + 1, 8), range(x - 1, -1, -1), range(x + 1, 8), range(x - 1, -1, -1)]
+
+    for i in directions:
+        for j in i:
+            if board[]
+
+
+    return alle_mogelijke_posities
+
+
 
 
 def innerLoop():
