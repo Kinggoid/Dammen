@@ -54,10 +54,10 @@ def setup():
 
 
 def stukken(spelbord):
-    w1 = damsteen(1, 0, 'wit')
-    w2 = damsteen(0, 1, 'wit')
-    z1 = damsteen(6, 7, 'zwart')
-    z2 = damsteen(4, 7, 'zwart')
+    w1 = damsteen(5, 6, 'wit')
+    w2 = damsteen(3, 6, 'wit')
+    z1 = damsteen(0, 5, 'zwart')
+    z2 = damsteen(5, 4, 'zwart')
 
     lst = [w1, z1, z2, w2]
     posities = []
@@ -264,19 +264,27 @@ def koningStappen(board, stuk):
     y = stuk.positie[1]
 
     alle_mogelijke_posities = []
+    stukken_die_gepakt_kunnen_worden = []
 
-    directions = [range(y + 1, 8), range(y + 1, 8), range(y - 1, -1, -1), range(y - 1, -1, -1)]
-    directions_x = [range(x + 1, 8), range(x - 1, -1, -1), range(x + 1, 8), range(x - 1, -1, -1)]
+    directions_y = [range(y + 1, 8), range(y - 1, -1, -1)]
+    directions_x = [range(x + 1, 8), range(x - 1, -1, -1)]
 
-    for i in directions:
-        for j in i:
-            if board:
-                pass
+    for i in directions_y:
+        for j in directions_x:
+            for y in i:
+                for x in j:
+                    print(x, y)
+                    plek = board[y][x]
+                    if plek != 0:
+                        if plek.team != team:
+                            stukken_die_gepakt_kunnen_worden.append([x, y])
+                        break
+                    else:
+                        alle_mogelijke_posities.append([x, y])
 
+    # als er shit zit in stukken_die... dan gaan we hier kijken (of we verwijzen naar een andere def die dat doet) of het vak daarna leeg is.
 
     return alle_mogelijke_posities
-
-
 
 
 def innerLoop():
@@ -352,44 +360,57 @@ def innerLoop():
                             new_y = new_pos[1] // hoogte
                             friendly = checkIfFriendly(board, new_x, new_y)
 
-                            if not alleen_sprong:
-                                if KanJeSpringen(board, pieces, beurt):
-                                    alleen_sprong = True
-
                             if friendly:
-                                if not alleen_sprong and damZetten(welkVak, new_x, new_y):
-                                    welkVak.positie[0] = new_x
-                                    welkVak.positie[1] = new_y
+                                if welkVak.king:
+                                    print('hey')
+                                    zetten = koningStappen(board, welkVak)
+                                    print(len(zetten))
+                                    if [new_x, new_y] in zetten:
+                                        welkVak.positie[0] = new_x
+                                        welkVak.positie[1] = new_y
 
-                                    board[new_y][new_x], board[old_y][old_x] = welkVak, 0
-
-                                    promoveer(welkVak, alleen_sprong)
-
-                                    beurt = draaiDeBeurt(beurt)
-                                    break
-                                elif damPakken(board, welkVak, new_x, new_y):
-                                    board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
-
-                                    welkVak.positie[0] = new_x
-                                    welkVak.positie[1] = new_y
-
-                                    board[new_y][new_x], board[old_y][old_x] = welkVak, 0
-
-                                    if welkVak.team:
-                                        aantal_zwarte_stukken -= 1
-                                    else:
-                                        aantal_witte_stukken -= 1
-
-                                    if nogEenKeerSpringen(board, welkVak, False):
-                                        alleen_sprong = True
-                                        stuk_dat_moet_springen = welkVak
+                                        board[new_y][new_x], board[old_y][old_x] = welkVak, 0
+                                        beurt = draaiDeBeurt(beurt)
                                         break
 
-                                    alleen_sprong = False
-                                    stuk_dat_moet_springen = 0
-                                    promoveer(welkVak, alleen_sprong)
-                                    beurt = draaiDeBeurt(beurt)
-                                    break
+                                else:
+                                    if not alleen_sprong:
+                                        if KanJeSpringen(board, pieces, beurt):
+                                            alleen_sprong = True
+
+                                    if not alleen_sprong and damZetten(welkVak, new_x, new_y):
+                                        welkVak.positie[0] = new_x
+                                        welkVak.positie[1] = new_y
+
+                                        board[new_y][new_x], board[old_y][old_x] = welkVak, 0
+
+                                        promoveer(welkVak, alleen_sprong)
+
+                                        beurt = draaiDeBeurt(beurt)
+                                        break
+                                    elif damPakken(board, welkVak, new_x, new_y):
+                                        board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
+
+                                        welkVak.positie[0] = new_x
+                                        welkVak.positie[1] = new_y
+
+                                        board[new_y][new_x], board[old_y][old_x] = welkVak, 0
+
+                                        if welkVak.team:
+                                            aantal_zwarte_stukken -= 1
+                                        else:
+                                            aantal_witte_stukken -= 1
+
+                                        if nogEenKeerSpringen(board, welkVak, False):
+                                            alleen_sprong = True
+                                            stuk_dat_moet_springen = welkVak
+                                            break
+
+                                        alleen_sprong = False
+                                        stuk_dat_moet_springen = 0
+                                        promoveer(welkVak, alleen_sprong)
+                                        beurt = draaiDeBeurt(beurt)
+                                        break
 
             clock.tick(10)
             draw_board(board, scherm, breedte, hoogte)
