@@ -371,16 +371,12 @@ def innerLoop():
                                     if zetten[1]:
                                         if [new_x, new_y] in zetten[1]:
                                             hoever_weg = [welkVak.positie[0] - new_x, welkVak.positie[1] - new_y]
-                                            print(welkVak.positie)
-                                            print(hoever_weg)
 
                                             for i in range(0, 2):
                                                 if hoever_weg[i] > 0:
                                                     hoever_weg[i] = -(hoever_weg[i] - 1) + welkVak.positie[i]
                                                 else:
                                                     hoever_weg[i] = -(hoever_weg[i] + 1) + welkVak.positie[i]
-
-                                            print(hoever_weg)
 
                                             pieces.remove(board[hoever_weg[1]][hoever_weg[0]])
                                             board[hoever_weg[1]][hoever_weg[0]] = 0
