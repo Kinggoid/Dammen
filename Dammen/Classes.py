@@ -262,30 +262,68 @@ def koningStappen(board, stuk):
     team = stuk.team
 
     alle_mogelijke_posities = []
-    stukken_die_gepakt_kunnen_worden = []
+    niet_springen = []
+    wel_springen = [stuk]
 
     for i in [-1, 1]:
         for j in [-1, 1]:
+            een_diagonaal = []
             x = stuk.positie[0]
             y = stuk.positie[1]
+            stukken = 0
             while True:
                 x += i
                 y += j
                 if 0 <= x <= 7 and 0 <= y <= 7:
-                    if board[y][x] != 0:
-                        if board[y][x].team != stuk.team:
-                            x += i
-                            y += j
-                            if 0 <= x <= 7 and 0 <= y <= 7:
-                                if board[y][x] == 0:
-                                    stukken_die_gepakt_kunnen_worden.append([x, y])
-                                    break
+                    vak = board[y][x]
+                    if vak != 0:
+                        if vak.team == team:
+                            break
+                        else:
+                            stukken += 1
+                            if stukken == 2:
+                                een_diagonaal.remove(een_diagonaal[-1])
+                                break
+                            een_diagonaal.append([y, x])
                     else:
-                        alle_mogelijke_posities.append([x, y])
+                        een_diagonaal.append([y, x])
                 else:
                     break
+            alle_mogelijke_posities.append(een_diagonaal)
 
-    return [alle_mogelijke_posities, stukken_die_gepakt_kunnen_worden]
+    for diagonaal in alle_mogelijke_posities:
+        sprong_mogelijk = 0
+        diagonal = []
+        for positie in diagonaal:
+            vak = board[positie[0]][positie[1]]
+            if vak != 0:
+                sprong_mogelijk += 1
+            if sprong_mogelijk == 0:
+                niet_springen.append(positie)
+            elif sprong_mogelijk == 1:
+                diagonal.append(positie)
+            else:
+                break
+        if diagonal and len(diagonal) > 1:
+            wel_springen.append(diagonal)
+
+    if len(wel_springen) > 1:
+        return wel_springen
+    else:
+        return niet_springen
+
+
+def diagonaalKoningSpringen(board, posities):
+    mogelijke_posities = []
+    stuk = posities[0]
+    coordinaten = stuk.positie
+    for diagonaal in range(1, len(posities)):
+        for positie in range(1, len(posities)):
+            stuk.positie = posities[diagonaal][positie]
+            if len(koningStappen(board, stuk)) > 2:
+                mogelijke_posities.append(posities[diagonaal][positie])
+    stuk.positie = coordinaten
+    return mogelijke_posities
 
 
 def innerLoop():
@@ -367,48 +405,38 @@ def innerLoop():
                             if friendly:
                                 if welkVak.king:
                                     zetten = koningStappen(board, welkVak)
+                                    if type(zetten[0]) != list:
+                                        zetten_voor_sprongen = diagonaalKoningSpringen(board, zetten)
+                                        if zetten_voor_sprongen:
+                                            zetten = zetten_voor_sprongen
+                                        for i in range(1, len(zetten)):
+                                            if [new_y, new_x] in zetten[i]:
+                                                print('ben er')
+                                                welkVak.positie[0] = new_x
+                                                welkVak.positie[1] = new_y
 
-                                    if zetten[1]:
-                                        if [new_x, new_y] in zetten[1]:
-                                            hoever_weg = [welkVak.positie[0] - new_x, welkVak.positie[1] - new_y]
+                                                gesprongen_stuk = zetten[i][0]
+                                                pieces.remove(board[gesprongen_stuk[0]][gesprongen_stuk[1]])
 
-                                            for i in range(0, 2):
-                                                if hoever_weg[i] > 0:
-                                                    hoever_weg[i] = -(hoever_weg[i] - 1) + welkVak.positie[i]
+                                                board[new_y][new_x], board[old_y][old_x], board[gesprongen_stuk[0]][gesprongen_stuk[1]] = welkVak, 0, 0
+                                                beurt = draaiDeBeurt(beurt)
+
+                                                if welkVak.team:
+                                                    aantal_zwarte_stukken -= 1
                                                 else:
-                                                    hoever_weg[i] = -(hoever_weg[i] + 1) + welkVak.positie[i]
-
-                                            pieces.remove(board[hoever_weg[1]][hoever_weg[0]])
-                                            board[hoever_weg[1]][hoever_weg[0]] = 0
-
-                                            if welkVak.team:
-                                                aantal_zwarte_stukken -= 1
-                                            else:
-                                                aantal_witte_stukken -= 1
-
-
+                                                    aantal_witte_stukken -= 1
+                                                break
+                                    else:
+                                        if [new_y, new_x] in zetten:
                                             welkVak.positie[0] = new_x
                                             welkVak.positie[1] = new_y
 
                                             board[new_y][new_x], board[old_y][old_x] = welkVak, 0
                                             beurt = draaiDeBeurt(beurt)
-
-
-
-                                    elif [new_x, new_y] in zetten[0]:
-                                        welkVak.positie[0] = new_x
-                                        welkVak.positie[1] = new_y
-
-                                        board[new_y][new_x], board[old_y][old_x] = welkVak, 0
-                                        beurt = draaiDeBeurt(beurt)
-                                    break
+                                            break
 
                                 else:
-                                    if not alleen_sprong:
-                                        if KanJeSpringen(board, pieces, beurt):
-                                            alleen_sprong = True
-
-                                    if not alleen_sprong and damZetten(welkVak, new_x, new_y):
+                                    if not KanJeSpringen(board, pieces, beurt) and damZetten(welkVak, new_x, new_y):
                                         welkVak.positie[0] = new_x
                                         welkVak.positie[1] = new_y
 
@@ -417,7 +445,6 @@ def innerLoop():
                                         promoveer(welkVak, alleen_sprong)
 
                                         beurt = draaiDeBeurt(beurt)
-                                        break
                                     elif damPakken(board, welkVak, new_x, new_y):
                                         pieces.remove(board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2])
                                         board[(new_y + welkVak.positie[1]) // 2][(new_x + welkVak.positie[0]) // 2] = 0
@@ -441,7 +468,7 @@ def innerLoop():
                                         stuk_dat_moet_springen = 0
                                         promoveer(welkVak, alleen_sprong)
                                         beurt = draaiDeBeurt(beurt)
-                                        break
+                                    break
 
             clock.tick(10)
             draw_board(board, scherm, breedte, hoogte)
