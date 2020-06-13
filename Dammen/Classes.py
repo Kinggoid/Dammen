@@ -313,20 +313,29 @@ def koningStappen(board, stuk):
 
 
 def diagonaalKoningSpringen(board, posities):
-    mogelijke_posities = [posities[0]]
     stuk = posities[0]
-    coordinaten = stuk.positie
-    for diagonaal in range(1, len(posities)):
-        diagonal = []
-        for positie in range(1, len(posities[diagonaal])):
-            stuk.positie = posities[diagonaal][positie]
-            if len(koningStappen(board, stuk)) > 2:
-                if not diagonal:
-                    diagonal.append(posities[diagonaal][0])
-                diagonal.append(posities[diagonaal][positie])
-        if diagonal:
-            mogelijke_posities.append(diagonal)
+    mogelijke_posities = [stuk, [posities[1][0]]]
+    coordinaten = []
+    for i in stuk.positie:
+        coordinaten.append(i)
+
+    y = board[posities[1][0][0]][posities[1][0][1]]
+    board[posities[1][0][0]][posities[1][0][1]] = 0
+    for i in range(1, len(posities[1])):
+        board[posities[1][i][0]][posities[1][i][1]] = stuk
+        stuk.positie[0] = posities[1][i][1]
+        stuk.positie[1] = posities[1][i][0]
+
+        x = koningStappen(board, stuk)
+        if type(x[0]) != list:
+            mogelijke_posities[1].append(posities[1][i])
+        board[posities[1][i][0]][posities[1][i][1]] = 0
+
     stuk.positie = coordinaten
+    board[posities[1][0][0]][posities[1][0][1]] = y
+
+    if len(mogelijke_posities[1]) == 1:
+        return posities
     return mogelijke_posities
 
 
@@ -379,8 +388,9 @@ def innerLoop():
                 old_x = pos[0] // breedte
                 old_y = pos[1] // hoogte
                 welkVak = board[old_y][old_x]
+                print(welkVak.positie)
 
-                if not watKanJeZetten(pieces, beurt) and welkVak != 0:
+                if not watKanJeZetten(pieces, beurt):
                     if not welkVak.king:
                         if not watKanJeSpringen(board, pieces, beurt):
                             if beurt:
@@ -404,9 +414,6 @@ def innerLoop():
                         if event.type == pygame.QUIT:
                             break
 
-                        if event.type == pygame.MOUSEBUTTONDOWN:
-                            break
-
                         if event.type == pygame.MOUSEBUTTONUP:
                             new_pos = pygame.mouse.get_pos()
                             new_x = new_pos[0] // breedte
@@ -419,32 +426,25 @@ def innerLoop():
                                 zetten = koningStappen(board, welkVak)
                                 if type(zetten[0]) != list:
                                     zetten_voor_sprongen = diagonaalKoningSpringen(board, zetten)
-                                    if len(zetten_voor_sprongen[1]) != 0:
-                                        stuk_dat_moet_springen = zetten[0]
-                                        zetten = zetten_voor_sprongen
-                                    for i in range(1, len(zetten)):
-                                        print(zetten)
-                                        print(i)
-                                        print([new_y, new_x])
-                                        if [new_y, new_x] in zetten[i]:
-                                            print('ben er')
-                                            welkVak.positie[0] = new_x
-                                            welkVak.positie[1] = new_y
+                                    if [new_y, new_x] in zetten_voor_sprongen[1]:
+                                        welkVak.positie[0] = new_x
+                                        welkVak.positie[1] = new_y
 
-                                            gesprongen_stuk = zetten[i][0]
+                                        gesprongen_stuk = zetten_voor_sprongen[1][0]
+                                        pieces.remove(board[gesprongen_stuk[0]][gesprongen_stuk[1]])
 
-                                            pieces.remove(board[gesprongen_stuk[0]][gesprongen_stuk[1]])
+                                        board[new_y][new_x], board[old_y][old_x], board[gesprongen_stuk[0]][gesprongen_stuk[1]] = welkVak, 0, 0
 
-                                            board[new_y][new_x], board[old_y][old_x], board[gesprongen_stuk[0]][gesprongen_stuk[1]] = welkVak, 0, 0
+                                        if welkVak.team:
+                                            aantal_zwarte_stukken -= 1
+                                        else:
+                                            aantal_witte_stukken -= 1
 
-                                            if welkVak.team:
-                                                aantal_zwarte_stukken -= 1
-                                            else:
-                                                aantal_witte_stukken -= 1
-
-                                            if not len(zetten_voor_sprongen) > 2:
-                                                beurt = draaiDeBeurt(beurt)
-                                            break
+                                        if len(zetten_voor_sprongen[1]) != len(zetten[1]):
+                                            stuk_dat_moet_springen = zetten_voor_sprongen[0]
+                                        else:
+                                            beurt = draaiDeBeurt(beurt)
+                                        break
                                 else:
                                     if [new_y, new_x] in zetten:
                                         welkVak.positie[0] = new_x
@@ -487,7 +487,7 @@ def innerLoop():
                                     stuk_dat_moet_springen = 0
                                     promoveer(welkVak, alleen_sprong)
                                     beurt = draaiDeBeurt(beurt)
-                                break
+                                    break
 
             clock.tick(10)
             draw_board(board, scherm, breedte, hoogte)
