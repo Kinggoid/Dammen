@@ -380,6 +380,7 @@ def innerLoop():
                             if not checkIfFriendly(board, new_x, new_y):  # Als het gekozen nieuwe vak al bezet is. Kan je daar niks plaatsen
                                 break
 
+
                             if begin_positie.king:  # Als de damsteen een koning is
                                 zetten = koningStappen(board, begin_positie)  # Dit zijn de zetten die je kan doen
                                 aantal_koning_zetten += 1
@@ -454,7 +455,6 @@ def innerLoop():
                                             promoveer(begin_positie)
                                             beurt = draaiDeBeurt(beurt)
                                             break
-                        break
 
 
             clock.tick(10)  # Frames per second
