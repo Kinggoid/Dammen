@@ -416,6 +416,7 @@ def innerLoop():
                                         break
 
                             else:  # Als je hier komt heb je een normale damsteen geselecteerd
+                                print('hier')
                                 zetten = damZetten(board, begin_positie)
                                 aantal_koning_zetten = 0
                                 if type(zetten[0][0]) != list and not alleen_sprong:  # Als je niks kan pakken
@@ -455,6 +456,7 @@ def innerLoop():
                                             promoveer(begin_positie)
                                             beurt = draaiDeBeurt(beurt)
                                             break
+                            break
 
 
             clock.tick(10)  # Frames per second
