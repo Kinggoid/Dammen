@@ -192,7 +192,6 @@ def koningStappen(board, stuk):
                         else:  # Als we één keer een steen van het andere team tegenkomen slaan we deze op. Als we er twee op hetzelfde diagonaal vinden stoppen we met dit diagonaal
                             stukken += 1
                             if stukken == 2:
-                                een_diagonaal.remove(een_diagonaal[-1])
                                 break
                             een_diagonaal.append([y, x])
                     else:  # Als het een leeg vak is slaan we hem op
@@ -228,15 +227,16 @@ def diagonaalKoningSpringen(board, posities):
     """In deze definitie kijken we of onze koning nog een keer kan slaan en op welke positie op zijn diagonaal hij kan
     landen om dit te doen."""
     stuk = posities[0]
-    mogelijke_posities = [stuk, [posities[1][0]]]
+    mogelijke_posities = [stuk, [posities[1][0]], True]
     coordinaten = []
+    kan_stuk_slaan = False
+
     for i in stuk.positie:  # We slaan de positie van het stuk op
         coordinaten.append(i)
 
     y = board[posities[1][0][0]][posities[1][0][1]]
     board[posities[1][0][0]][posities[1][0][1]] = 0
-    for i in range(1, len(
-            posities[1])):  # Voor elke positie waar we kunnen komen kijken we of we daarvan nog iemand kunnen slaan
+    for i in range(1, len(posities[1])):  # Voor elke positie waar we kunnen komen kijken we of we daarvan nog iemand kunnen slaan
         # Dit zou ons volgens de regels verplichten op dat vak te landen
         board[posities[1][i][0]][posities[1][i][1]] = stuk
         stuk.positie[0] = posities[1][i][1]
@@ -244,6 +244,7 @@ def diagonaalKoningSpringen(board, posities):
 
         x = koningStappen(board, stuk)
         if type(x[0]) != list:
+            kan_stuk_slaan = True
             mogelijke_posities[1].append(posities[1][i])
         board[posities[1][i][0]][posities[1][i][1]] = 0
 
@@ -251,9 +252,9 @@ def diagonaalKoningSpringen(board, posities):
     stuk.positie = coordinaten
     board[posities[1][0][0]][posities[1][0][1]] = y
 
-    if len(mogelijke_posities[1]) == 1:  # Lijst met posities als het stuk nog een keer kan slaan
-        return posities
-    return mogelijke_posities  # Waar hij anders naartoe kan
+    if kan_stuk_slaan:  # Lijst met posities als het stuk nog een keer kan slaan
+        return mogelijke_posities
+    return posities  # Waar hij anders naartoe kan
 
 
 def stukkenBijhouden(wit, zwart, stuk):
@@ -280,14 +281,14 @@ def damZetten(board, stuk):
             if 0 <= x <= 7 and 0 <= y <= 7:  # Als het nog binnen het bord zit
                 position = board[y][x]
                 if position == 0:
-                    if team and y > positie[1] or not team and y < positie[
-                        1]:  # Witte damstenen moeten schuin naar beneden en zwarte damstenen moeten de andere kant op
+                    if team and y > positie[1] or not team and y < positie[1]:  # Witte damstenen moeten schuin naar beneden en zwarte damstenen moeten de andere kant op
                         stap_vooruit_posities.append([y, x])
                 elif position.team != team:  # Als er een man van het andere team naast onze man ligt dan kijken we of het vakje daarna leeg is.
                     y2 = y + i
                     x2 = x + j
-                    if checkIfFriendly(board, x2, y2):
-                        sprong_posities.append([[y, x], [y2, x2]])
+                    if 0 <= x2 <= 7 and 0 <= y2 <= 7:
+                        if checkIfFriendly(board, x2, y2):
+                            sprong_posities.append([[y, x], [y2, x2]])
 
     if sprong_posities:  # Als we iets kunnen pakken, krijgen we zoiets: [[positie van de steen die je pakt, positie waar je terecht komt]] terug
         return sprong_posities
@@ -304,60 +305,31 @@ def herhaling(zetten):
 def kanJeNogIets(board, stukken, beurt):
     kan_je_nog_iets = 0
     alleen_sprong = 0
-
     for dam in stukken:  # Hier kijken we of de speler nog zetten heeft. Zo niet, dan wint de ander
         if dam.team == beurt:
-            mogelijke_zetten = damZetten(board, dam)
             if dam.king:
-                if kan_je_nog_iets == 0:
-                    if koningStappen(board, dam):
-                        kan_je_nog_iets = 1
+                kan_je_nog_iets = 1
+                if type(koningStappen(board, dam)[0]) != list:
+                    alleen_sprong = True
+                    break
+            mogelijke_zetten = damZetten(board, dam)
             if mogelijke_zetten:
                 kan_je_nog_iets = 1
-                if type(mogelijke_zetten[0][
-                            0]) == list:  # Als een normale man kan springen dan gaat 'alleen_sprong' aan
+                if type(mogelijke_zetten[0][0]) == list:  # Als een normale man kan springen dan gaat 'alleen_sprong' aan
                     alleen_sprong = True
                     break
 
     if kan_je_nog_iets == 0:
         if beurt:
             print('Zwart wint')
-            return [alleen_sprong, False]
+            return [alleen_sprong, True]
         else:
             print('Wit wint')
-            return [alleen_sprong, False]
-    return [alleen_sprong, True]
+            return [alleen_sprong, True]
+    return [alleen_sprong, False]
 
 
 def innerLoop():
-    pygame.init()  # Begin de game
-    board = setup()  # Zet het bord op
-    pieces = stukken(board)  # Zet de stukken erop
-    aantal_witte_stukken = 12
-    aantal_zwarte_stukken = 12
-
-    aantal_koning_zetten = 0
-
-    alleen_sprong = False  # Als een stuk na een sprong nog een keer moet springen gaat deze aan
-    stuk_dat_moet_springen = 0  # Naam spreekt voor zich
-
-    afmetingen = [700, 700]  # Hoe groot het scherm is
-    breedte = afmetingen[0] // 8
-    hoogte = afmetingen[1] // 8
-    scherm = pygame.display.set_mode(afmetingen)
-
-    pygame.display.set_caption("Dammen")
-
-    clock = pygame.time.Clock()
-
-    Damsteen.radius = afmetingen[0] // 20
-    Damsteen.rand = afmetingen[1] // 150
-
-    beurt = True  # Als beurt True is dan is wit aan de beurt
-    computer_beurt = None
-
-    moeilijkheidsgraad = 0
-
     while True:
         computer = input('Wil je tegen de computer spelen? Y/N: ')
         if computer == 'N' or computer == 'n':
@@ -379,23 +351,40 @@ def innerLoop():
                     computer_beurt = random.choice([False, True])
             break
 
+    pygame.init()  # Begin de game
+    pygame.display.set_caption("Dammen")
+
+    board = setup()  # Zet het bord op
+    pieces = stukken(board)  # Zet de stukken erop
+    aantal_witte_stukken = 1
+    aantal_zwarte_stukken = 3
+
+    aantal_koning_zetten = 0
+
+    alleen_sprong = False  # Als een stuk na een sprong nog een keer moet springen gaat deze aan
+    stuk_dat_moet_springen = 0  # Naam spreekt voor zich
+
+    afmetingen = [700, 700]  # Hoe groot het scherm is
+    breedte = afmetingen[0] // 8
+    hoogte = afmetingen[1] // 8
+    scherm = pygame.display.set_mode(afmetingen)
+
+    Damsteen.radius = afmetingen[0] // 20
+    Damsteen.rand = afmetingen[1] // 150
+
+    beurt = True  # Als beurt True is dan is wit aan de beurt
+    computer_beurt = None
+
+    moeilijkheidsgraad = 0
+
     game_over = 0
     while game_over == 0:
         if computer_beurt is None or beurt != computer_beurt:
             for event in pygame.event.get():
                 clock = pygame.time.Clock()
 
-                if event.type == pygame.QUIT or einde(aantal_witte_stukken,
-                                                      aantal_zwarte_stukken):  # Als je wilt stoppen of als één kleur geen stukken meer over heeft
+                if event.type == pygame.QUIT:  # Als je wilt stoppen of als één kleur geen stukken meer over heeft
                     game_over = True
-                    break
-
-                game_over = herhaling(aantal_koning_zetten)
-                if game_over:
-                    break
-
-                alleen_sprong, game_over = kanJeNogIets(board, pieces, beurt)
-                if game_over:
                     break
 
                 if event.type == pygame.MOUSEBUTTONDOWN:  # Als je ergens op klikt
@@ -405,9 +394,6 @@ def innerLoop():
                     begin_positie = board[oud_y][oud_x]  # begin_positie is de plek op het bord waar je op hebt geklikt
 
                     if begin_positie == 0:  # Als je een leeg vak selecteerd breken we meteen af
-                        break
-
-                    if stuk_dat_moet_springen != 0 and stuk_dat_moet_springen != begin_positie:  # Als we een steen hebben die moet springen
                         break
 
                     if beurt % 2 == begin_positie.team:  # Als de gekozen damsteen de goede kleur is
@@ -422,51 +408,48 @@ def innerLoop():
                                 new_x = new_pos[0] // breedte
                                 new_y = new_pos[1] // hoogte
 
-                                if not checkIfFriendly(board, new_x,
-                                                       new_y):  # Als het gekozen nieuwe vak al bezet is. Kan je daar niks plaatsen
+                                if not checkIfFriendly(board, new_x, new_y):  # Als het gekozen nieuwe vak al bezet is. Kan je daar niks plaatsen
+                                    break
+
+                                alleen_sprong, game_over = kanJeNogIets(board, pieces, beurt)
+                                if game_over:
+                                    break
+
+                                if stuk_dat_moet_springen != 0 and stuk_dat_moet_springen != begin_positie:  # Als we een steen hebben die moet springen
                                     break
 
                                 if begin_positie.king:  # Als de damsteen een koning is
                                     zetten = koningStappen(board, begin_positie)  # Dit zijn de zetten die je kan doen
                                     aantal_koning_zetten += 1
-                                    if type(zetten[0]) != list:  # Als je een stuk kan pakken, is deze True
-                                        zetten_voor_sprongen = diagonaalKoningSpringen(board,
-                                                                                       zetten)  # Checkt of nog iemand kan pakken
-                                        if [new_y, new_x] in zetten_voor_sprongen[
-                                            1]:  # Als onze zet kan veranderen we de nodige dingen om deze te verwerken
+                                    if alleen_sprong:  # Als je een stuk kan pakken, is deze True
+                                        zetten_voor_sprongen = diagonaalKoningSpringen(board, zetten)  # Checkt of nog iemand kan pakken
+                                        if [new_y, new_x] in zetten_voor_sprongen[1]:  # Als onze zet kan veranderen we de nodige dingen om deze te verwerken
                                             begin_positie.nieuwe_positie(new_x, new_y)
 
                                             gesprongen_stuk = zetten_voor_sprongen[1][0]
                                             pieces.remove(board[gesprongen_stuk[0]][gesprongen_stuk[1]])
 
-                                            board[new_y][new_x], board[oud_y][oud_x], board[gesprongen_stuk[0]][
-                                                gesprongen_stuk[1]] = begin_positie, 0, 0  # Update het bord goed
+                                            board[new_y][new_x], board[oud_y][oud_x], board[gesprongen_stuk[0]][gesprongen_stuk[1]] = begin_positie, 0, 0  # Update het bord goed
 
-                                            aantal_witte_stukken, aantal_zwarte_stukken = stukkenBijhouden(
-                                                aantal_witte_stukken, aantal_zwarte_stukken, begin_positie)
+                                            aantal_witte_stukken, aantal_zwarte_stukken = stukkenBijhouden(aantal_witte_stukken, aantal_zwarte_stukken, begin_positie)
 
-                                            if len(zetten_voor_sprongen[1]) != len(
-                                                    zetten[1]):  # Als we nog een keer een stuk kunnen pakken
-                                                alleen_sprong = True
+                                            if len(zetten_voor_sprongen) != len(zetten):  # Als we nog een keer een stuk kunnen pakken
                                                 stuk_dat_moet_springen = zetten_voor_sprongen[0]
                                             else:  # Anders draaien we de beurt om
                                                 promoveer(begin_positie)
-                                                alleen_sprong = False
                                                 stuk_dat_moet_springen = 0
                                                 beurt = draaiDeBeurt(beurt)
-                                            break
 
                                     else:  # Anders kan je je koning gewoon ergens naar verplaatsen
                                         if [new_y, new_x] in zetten:
+
                                             begin_positie.nieuwe_positie(new_x, new_y)
 
                                             board[new_y][new_x], board[oud_y][oud_x] = begin_positie, 0
                                             promoveer(begin_positie)
                                             beurt = draaiDeBeurt(beurt)
-                                            break
 
                                 else:  # Als je hier komt heb je een normale damsteen geselecteerd
-                                    print('hier')
                                     zetten = damZetten(board, begin_positie)
                                     aantal_koning_zetten = 0
                                     if type(zetten[0][0]) != list and not alleen_sprong:  # Als je niks kan pakken
@@ -476,7 +459,6 @@ def innerLoop():
                                             board[new_y][new_x], board[oud_y][oud_x] = begin_positie, 0
                                             promoveer(begin_positie)
                                             beurt = draaiDeBeurt(beurt)
-                                        break
                                     else:  # Als je iets kan pakken
                                         for diagonaal in range(0, len(zetten)):
                                             positie = zetten[diagonaal]
@@ -485,42 +467,46 @@ def innerLoop():
 
                                                 te_verwijderen_stuk_positie = positie[0]
 
-                                                pieces.remove(board[te_verwijderen_stuk_positie[0]][
-                                                                  te_verwijderen_stuk_positie[1]])
+                                                pieces.remove(board[te_verwijderen_stuk_positie[0]][te_verwijderen_stuk_positie[1]])
 
-                                                aantal_witte_stukken, aantal_zwarte_stukken = stukkenBijhouden(
-                                                    aantal_witte_stukken, aantal_zwarte_stukken, begin_positie)
+                                                aantal_witte_stukken, aantal_zwarte_stukken = stukkenBijhouden(aantal_witte_stukken, aantal_zwarte_stukken, begin_positie)
 
                                                 board[new_y][new_x], board[oud_y][oud_x], \
-                                                board[te_verwijderen_stuk_positie[0]][
-                                                    te_verwijderen_stuk_positie[1]] = begin_positie, 0, 0
+                                                board[te_verwijderen_stuk_positie[0]][te_verwijderen_stuk_positie[1]] = begin_positie, 0, 0
 
-                                                volgende_sprong = damZetten(board,
-                                                                            begin_positie)  # We kijken of het stuk nog een keer kan springen
+                                                volgende_sprong = damZetten(board, begin_positie)  # We kijken of het stuk nog een keer kan springen
 
                                                 if volgende_sprong:
-                                                    if type(volgende_sprong[0][
-                                                                0]) == list:  # Als hij nog een keer kan springen slaan we dat op
-                                                        alleen_sprong = True
+                                                    if type(volgende_sprong[0][0]) == list:  # Als hij nog een keer kan springen slaan we dat op:
                                                         stuk_dat_moet_springen = begin_positie
-                                                        break
+                                                    else:
+                                                        stuk_dat_moet_springen = 0
+                                                        promoveer(begin_positie)
+                                                        beurt = draaiDeBeurt(beurt)
 
-                                                #  Anders gaan we door
+                                                else:  # Anders gaan we door
+                                                    stuk_dat_moet_springen = 0
+                                                    promoveer(begin_positie)
+                                                    beurt = draaiDeBeurt(beurt)
 
-                                                alleen_sprong = False
-                                                stuk_dat_moet_springen = 0
-                                                promoveer(begin_positie)
-                                                beurt = draaiDeBeurt(beurt)
-                                                break
+                                if einde(aantal_witte_stukken, aantal_zwarte_stukken):
+                                    game_over = 1
+                                    break
+
+                                if herhaling(aantal_koning_zetten):
+                                    break
                                 break
 
                 clock.tick(10)  # Frames per second
                 draw_board(board, scherm, breedte, hoogte)  # We tekenen het nieuwe bord
                 pygame.display.flip()  # We updaten het scherm
         else:
-            einde(aantal_witte_stukken, aantal_zwarte_stukken)
-            game_over = herhaling(aantal_koning_zetten)
-            if game_over:
+            if einde(aantal_witte_stukken, aantal_zwarte_stukken):
+                game_over = 1
+                break
+
+            if herhaling(aantal_koning_zetten):
+                game_over = 1
                 break
 
             alleen_sprong, game_over = kanJeNogIets(board, pieces, beurt)
