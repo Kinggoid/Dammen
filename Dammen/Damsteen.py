@@ -1,5 +1,6 @@
 import pygame
 
+
 class Damsteen:
     radius = 0
     rand = 0
@@ -16,6 +17,13 @@ class Damsteen:
     def promoveren(self):  # Als je een damsteen wilt promoveren
         self.king = True
         self.waarde = 6
+
+    def correcte_soort(self, koning):
+        self.king = koning
+        if koning:
+            self.waarde = 6
+        else:
+            self.waarde = 1
 
     def nieuwe_positie(self, x, y):  # Als je een damsteen een nieuwe positie wil geven
         self.positie = [x, y]
