@@ -1,6 +1,7 @@
 import pygame
 import random
 from Dammen.Damsteen import Damsteen
+from Dammen.AI import damAI
 
 
 def setup():
@@ -197,9 +198,6 @@ def diagonaalKoningSpringen(board, posities):
     coordinaten = []
     kan_stuk_slaan = False
 
-    print(stuk)
-    print(posities)
-
     for i in stuk.positie:  # We slaan de positie van het stuk op
         coordinaten.append(i)
 
@@ -338,14 +336,19 @@ def innerLoop():
         if computer == 'N' or computer == 'n':
             break
         elif computer == 'Y' or computer == 'y':
-            # while True:
-            #     difficulty = input('Op welke moeilijkheidsgraad wil je spelen? easy/medium/hard: ')
-            #     graden = ['easy', 'medium', 'hard']
-            #     if difficulty in graden:
-            #         moeilijkheidsgraad = graden.index(difficulty)
-            #         break
+            while True:
+                difficulty = input('Op welke moeilijkheidsgraad wil je spelen? easy/medium/hard: ')
+                if difficulty == 'easy':
+                    moeilijkheidsgraad = 3
+                    break
+                elif difficulty == 'medium':
+                    moeilijkheidsgraad = 5
+                    break
+                elif difficulty == 'hard':
+                    moeilijkheidsgraad = 7
+                    break
             while computer_beurt == None:
-                voorkeur = input('Als welke kleur wil je beginnen?: wit/zwart/geen voorkeur')
+                voorkeur = input('Als welke kleur wil je beginnen?: wit/zwart/geen voorkeur: ')
                 if voorkeur == 'wit' or voorkeur == 'Wit':
                     computer_beurt = False
                 elif voorkeur == 'zwart' or voorkeur == 'Zwart':
@@ -376,7 +379,7 @@ def innerLoop():
 
     beurt = True  # Als beurt True is dan is wit aan de beurt
 
-    moeilijkheidsgraad = 0
+    ai = damAI()
 
     game_over = 0
     while game_over == 0:
@@ -526,70 +529,9 @@ def innerLoop():
 
 
         else:  # Als de computer aan zet is
-            posities_van_de_stukken = []
-            for i in pieces:
-                posities_van_de_stukken.append(i.positie.copy())
+            ai.bringUpToDate(board, pieces, beurt, moeilijkheidsgraad, aantal_witte_stukken, aantal_zwarte_stukken, stuk_dat_moet_springen, aantal_koning_zetten)
 
-            new_board = board.copy()
-            if beurt:
-                aangeraden_zet = miniMax(3, pieces, beurt, new_board, [aantal_witte_stukken, aantal_zwarte_stukken],
-                                         stuk_dat_moet_springen, 3, beurt)
-            else:
-                aangeraden_zet = miniMax(3, pieces, beurt, new_board, [aantal_zwarte_stukken, aantal_witte_stukken],
-                                         stuk_dat_moet_springen, 3, beurt)
-
-            stuk = aangeraden_zet[1][0]
-
-
-            nieuwe_plek = aangeraden_zet[1][1]
-
-            if aangeraden_zet[-1] == 1:
-                board[nieuwe_plek[0]][nieuwe_plek[1]], board[stuk.positie[1]][stuk.positie[0]] = stuk, 0
-                stuk.nieuwe_positie(nieuwe_plek[1], nieuwe_plek[0])
-                beurt = draaiDeBeurt(beurt)
-                stuk_dat_moet_springen = 0
-
-            elif aangeraden_zet[-1] == 2:
-                pieces.remove(board[nieuwe_plek[0][0]][nieuwe_plek[0][1]])
-                board[nieuwe_plek[1][0]][nieuwe_plek[1][1]], board[nieuwe_plek[0][0]][nieuwe_plek[0][1]], \
-                board[stuk.positie[1]][stuk.positie[0]] = stuk, 0, 0
-                stuk.nieuwe_positie(nieuwe_plek[1][1], nieuwe_plek[1][0])
-
-                aantal_witte_stukken, aantal_zwarte_stukken = stukkenBijhouden(
-                    aantal_witte_stukken, aantal_zwarte_stukken, stuk)
-
-                nog_een_sprong = damZetten(board, stuk)
-                if nog_een_sprong:
-                    if not type(nog_een_sprong[0][0]) == list:
-                        beurt = draaiDeBeurt(beurt)
-                    else:
-                        stuk_dat_moet_springen = stuk
-                else:
-                    beurt = draaiDeBeurt(beurt)
-
-            elif aangeraden_zet[-1] == 3:
-                board[nieuwe_plek[0]][nieuwe_plek[1]], board[stuk.positie[1]][stuk.positie[0]] = stuk, 0
-                stuk.nieuwe_positie(nieuwe_plek[1], nieuwe_plek[0])
-                beurt = draaiDeBeurt(beurt)
-                stuk_dat_moet_springen = 0
-
-            elif aangeraden_zet[-1] == 4:
-                pieces.remove(board[nieuwe_plek[0][0]][nieuwe_plek[0][1]])
-                board[nieuwe_plek[1][0]][nieuwe_plek[1][1]], board[nieuwe_plek[0][0]][nieuwe_plek[0][1]], \
-                board[stuk.positie[1]][stuk.positie[0]] = stuk, 0, 0
-                stuk.nieuwe_positie(nieuwe_plek[1][1], nieuwe_plek[1][0])
-
-                aantal_witte_stukken, aantal_zwarte_stukken = stukkenBijhouden(
-                    aantal_witte_stukken, aantal_zwarte_stukken, stuk)
-
-                nog_een_sprong = koningStappen(board, stuk)
-                if nog_een_sprong:
-                    if not type(nog_een_sprong[0]) != int:
-                        beurt = draaiDeBeurt(beurt)
-                    else:
-                        stuk_dat_moet_springen = stuk
-                else:
-                    beurt = draaiDeBeurt(beurt)
+            board, stuk_dat_moet_springen, beurt, [aantal_witte_stukken, aantal_zwarte_stukken], pieces, stuk = ai.AIzet()
 
             draw_board(board, scherm, breedte, hoogte)  # We tekenen het nieuwe bord
             pygame.display.flip()  # We updaten het scherm
@@ -605,246 +547,6 @@ def innerLoop():
             if herhaling(aantal_koning_zetten):
                 break
 
-
-            promoveer(stuk)
-
-
-def gameStaat(stukken, beurt, beurt_van_het_hoogste_niveau):
-    punten_wit = 0
-    punten_zwart = 0
-
-    for stuk in stukken:
-        if stuk.team:
-            punten_wit += stuk.waarde
-        else:
-            punten_zwart += stuk.waarde
-
-    if beurt == beurt_van_het_hoogste_niveau:
-        if beurt:
-            return punten_wit - punten_zwart
-        return punten_zwart - punten_wit
-    else:
-        if beurt:
-            return punten_zwart - punten_wit
-        return punten_wit - punten_zwart
-
-
-def eindnode(game_over, alleen_sprong, aantal_stukken, beurt):
-    eind = einde(aantal_stukken[0], aantal_stukken[1])
-    if eind[0]:
-        if eind[1]:
-            return [100]
-        else:
-            return [-100]
-
-    if game_over:
-        if alleen_sprong == beurt:
-            return [100]
-        else:
-            return [-100]
-
-    return 0
-
-
-def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springen, total_depth, hoogste_beurt):
-    alleen_sprong, game_over, stukken_die_kunnen_bewegen, hun_zetten = watKanJeZetten(board, stukken, beurt, False)
-
-    winst_of_verlies = eindnode(game_over, alleen_sprong, aantal_stukken, beurt)
-    if winst_of_verlies != False:
-        return winst_of_verlies
-
-    if diepte == 0:
-        return [gameStaat(stukken, beurt, hoogste_beurt)]
-
-    if stuk_dat_moet_springen != 0:
-        hun_zetten = [hun_zetten[stukken_die_kunnen_bewegen.index(stuk_dat_moet_springen)]]
-        stukken_die_kunnen_bewegen = [stuk_dat_moet_springen]
-
-    stuk_dat_moet_springen = 0
-
-    hoogste_waarde = -200
-    beste_zet = 0
-    wat_voor_zet = 0
-
-    new_board = []
-
-    for i in board:
-        new_board.append(i.copy())
-
-    for i in range(0, len(stukken_die_kunnen_bewegen)):
-        stuk = stukken_die_kunnen_bewegen[i]
-        soort_stuk = stuk.king
-        positie_van_stuk = stuk.positie.copy()
-
-        if stuk.king:  # Als de damsteen een koning is
-            print(stukken_die_kunnen_bewegen)
-            print(stuk.positie)
-            print(hun_zetten)
-            print(hun_zetten[i])
-            if alleen_sprong:
-                for richting in hun_zetten[i][1]:
-                    new_stukken = stukken.copy()
-                    new_new_board = []
-                    for u in new_board:
-                        new_new_board.append(u.copy())
-                    print(richting)
-
-                    new_stukken.remove(new_new_board[richting[0][0]][richting[0][1]])
-                    new_new_board[richting[1][0]][richting[1][1]], new_new_board[stuk.positie[1]][stuk.positie[0]], \
-                    new_new_board[richting[0][0]][richting[0][1]] = stuk, 0, 0
-                    stuk.nieuwe_positie(richting[1][1], richting[1][0])
-
-                    nog_een_sprong = koningStappen(new_new_board, stuk)
-
-                    if len(nog_een_sprong) > 0:
-                        if type(nog_een_sprong[0]) != int:
-                            stuk_dat_moet_springen = stuk
-                            new_value = miniMax(diepte - 1, new_stukken, beurt, new_new_board, aantal_stukken,
-                                                stuk_dat_moet_springen, total_depth, hoogste_beurt)
-                        else:
-                            promoveer(stuk)
-                            stuk_dat_moet_springen = 0
-                            new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
-                                                stuk_dat_moet_springen, total_depth, hoogste_beurt)
-
-                    else:
-                        promoveer(stuk)
-                        stuk_dat_moet_springen = 0
-                        new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
-                                            stuk_dat_moet_springen, total_depth, hoogste_beurt)
-
-                    stuk_dat_moet_springen = 0
-
-                    stuk.nieuwe_positie(positie_van_stuk[0], positie_van_stuk[1])
-                    stuk.correcte_soort(soort_stuk)
-
-                    if diepte == total_depth and new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        beste_zet = [stuk, richting]
-                        wat_voor_zet = 4
-                    elif new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        wat_voor_zet = 4
-                    elif diepte == total_depth and new_value[0] == hoogste_waarde:
-                        if random.randint(0, 1) == 0:
-                            hoogste_waarde = new_value[0]
-                            beste_zet = [stuk, richting]
-                            wat_voor_zet = 4
-            else:
-                for richting in hun_zetten[i][1]:
-                    print(richting[1])
-                    new_stukken = stukken.copy()
-                    new_new_board = []
-                    for u in new_board:
-                        new_new_board.append(u.copy())
-
-                    stuk.nieuwe_positie(richting[1], richting[0])
-
-                    stuk_dat_moet_springen = 0
-
-                    new_new_board[richting[0]][richting[1]], new_new_board[stuk.positie[1]][stuk.positie[0]] = stuk, 0
-
-                    new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
-                                        stuk_dat_moet_springen, total_depth, hoogste_beurt)
-
-                    stuk.nieuwe_positie(positie_van_stuk[0], positie_van_stuk[1])
-
-                    promoveer(stuk)
-                    beurt = draaiDeBeurt(beurt)
-
-                    if diepte == total_depth and new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        beste_zet = [stuk, richting]
-                        wat_voor_zet = 3
-                    elif new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        wat_voor_zet = 3
-                    elif diepte == total_depth and new_value[0] == hoogste_waarde:
-                        if random.randint(0, 1) == 0:
-                            hoogste_waarde = new_value[0]
-                            beste_zet = [stuk, richting]
-                            wat_voor_zet = 3
-
-        else:
-            if alleen_sprong:
-                for richting in hun_zetten[i]:
-                    new_stukken = stukken.copy()
-                    new_new_board = []
-                    for u in new_board:
-                        new_new_board.append(u.copy())
-
-                    new_stukken.remove(new_new_board[richting[0][0]][richting[0][1]])
-                    new_new_board[richting[1][0]][richting[1][1]], new_new_board[stuk.positie[1]][stuk.positie[0]], \
-                    new_new_board[richting[0][0]][richting[0][1]] = stuk, 0, 0
-                    stuk.nieuwe_positie(richting[1][1], richting[1][0])
-                    print(damZetten(new_new_board, stuk))
-                    nog_een_sprong = damZetten(new_new_board, stuk)
-
-                    if len(nog_een_sprong) > 0:
-                        if type(nog_een_sprong[0][0]) == list:
-                            stuk_dat_moet_springen = stuk
-                            new_value = miniMax(diepte - 1, new_stukken, beurt, new_new_board, aantal_stukken,
-                                                stuk_dat_moet_springen, total_depth, hoogste_beurt)
-                        else:
-                            promoveer(stuk)
-                            stuk_dat_moet_springen = 0
-                            new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
-                                                stuk_dat_moet_springen, total_depth, hoogste_beurt)
-
-                    else:
-                        promoveer(stuk)
-                        stuk_dat_moet_springen = 0
-                        new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
-                                            stuk_dat_moet_springen, total_depth, hoogste_beurt)
-
-                    stuk_dat_moet_springen = 0
-
-                    stuk.nieuwe_positie(positie_van_stuk[0], positie_van_stuk[1])
-                    stuk.correcte_soort(soort_stuk)
-
-                    if diepte == total_depth and new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        beste_zet = [stuk, richting]
-                        wat_voor_zet = 2
-                    elif new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        wat_voor_zet = 2
-                    elif diepte == total_depth and new_value[0] == hoogste_waarde:
-                        if random.randint(0, 1) == 0:
-                            hoogste_waarde = new_value[0]
-                            beste_zet = [stuk, richting]
-                            wat_voor_zet = 2
-
-            else:
-                for richting in hun_zetten[i]:
-                    new_stukken = stukken.copy()
-                    new_new_board = []
-                    for u in new_board:
-                        new_new_board.append(u.copy())
-
-                    stuk_dat_moet_springen = 0
-                    new_new_board[richting[0]][richting[1]], new_new_board[stuk.positie[1]][stuk.positie[0]] = stuk, 0
-                    stuk.nieuwe_positie(richting[1], richting[0])
-
-                    new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
-                                        stuk_dat_moet_springen, total_depth, hoogste_beurt)
-
-                    stuk.nieuwe_positie(positie_van_stuk[0], positie_van_stuk[1])
-
-                    if diepte == total_depth and new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        beste_zet = [stuk, richting]
-                        wat_voor_zet = 1
-                    elif new_value[0] > hoogste_waarde:
-                        hoogste_waarde = new_value[0]
-                        wat_voor_zet = 1
-                    elif diepte == total_depth and new_value[0] == hoogste_waarde:
-                        if random.randint(0, 1) == 0:
-                            hoogste_waarde = new_value[0]
-                            beste_zet = [stuk, richting]
-                            wat_voor_zet = 1
-
-    return [hoogste_waarde, beste_zet, wat_voor_zet]
 
 
 # alleen_sprong, game_over, stukken_die_kunnen_bewegen, hun_zetten = kanJeNogIets(board, pieces, beurt)

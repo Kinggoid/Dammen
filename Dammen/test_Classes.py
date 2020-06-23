@@ -281,7 +281,7 @@ class testGameStaat(unittest.TestCase):
         board = Classes.setup()
         stukken = kanNiksMeer(board)
         beurt = True
-        self.assertEqual(-3, Classes.gameStaat(stukken, beurt))
+        self.assertEqual(-3, Classes.gameStaat(stukken, beurt, beurt))
 
 
 class testEindNode(unittest.TestCase):
