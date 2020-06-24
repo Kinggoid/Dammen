@@ -16,7 +16,7 @@ class Damsteen:
 
     def promoveren(self):  # Als je een damsteen wilt promoveren
         self.king = True
-        self.waarde = 6
+        self.waarde = 50
 
     def correcte_soort(self, koning):
         self.king = koning

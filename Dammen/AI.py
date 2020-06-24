@@ -1,6 +1,4 @@
-from Dammen.Damsteen import Damsteen
-from Dammen import Classes
-import pygame
+from Dammen import definities
 import random
 
 
@@ -8,8 +6,9 @@ def bijwerkenAI(board, stuk, beurt, nieuwe_plek, aangeraden_zet, pieces, aantal_
     if aangeraden_zet[-1] == 1:
         board[nieuwe_plek[0]][nieuwe_plek[1]], board[stuk.positie[1]][stuk.positie[0]] = stuk, 0
         stuk.nieuwe_positie(nieuwe_plek[1], nieuwe_plek[0])
-        beurt = Classes.draaiDeBeurt(beurt)
+        beurt = not beurt
         stuk_dat_moet_springen = 0
+
 
     elif aangeraden_zet[-1] == 2:
         pieces.remove(board[nieuwe_plek[0][0]][nieuwe_plek[0][1]])
@@ -17,31 +16,29 @@ def bijwerkenAI(board, stuk, beurt, nieuwe_plek, aangeraden_zet, pieces, aantal_
         board[stuk.positie[1]][stuk.positie[0]] = stuk, 0, 0
         stuk.nieuwe_positie(nieuwe_plek[1][1], nieuwe_plek[1][0])
 
-        aantal_witte_stukken, aantal_zwarte_stukken = Classes.stukkenBijhouden(
+        aantal_witte_stukken, aantal_zwarte_stukken = definities.stukkenBijhouden(
             aantal_witte_stukken, aantal_zwarte_stukken, stuk)
 
         if stuk.king:
-            nog_een_sprong = Classes.koningStappen(board, stuk)
+            nog_een_sprong = definities.koningStappen(board, stuk)
         else:
-            nog_een_sprong = Classes.damZetten(board, stuk)
+            nog_een_sprong = definities.damZetten(board, stuk)
 
         if nog_een_sprong:
             if stuk.king:
-                if type(nog_een_sprong[0]) != int:
-                    beurt = Classes.draaiDeBeurt(beurt)
+                if type(nog_een_sprong[0]) == int:
+                    beurt = not beurt
                     stuk_dat_moet_springen = 0
-                    Classes.promoveer(stuk)
                 else:
                     stuk_dat_moet_springen = stuk
             else:
                 if not type(nog_een_sprong[0][0]) == list:
-                    beurt = Classes.draaiDeBeurt(beurt)
+                    beurt = not beurt
                     stuk_dat_moet_springen = 0
-                    Classes.promoveer(stuk)
                 else:
                     stuk_dat_moet_springen = stuk
         else:
-            beurt = Classes.draaiDeBeurt(beurt)
+            beurt = not beurt
             stuk_dat_moet_springen = 0
 
     return [board, stuk_dat_moet_springen, beurt, [aantal_witte_stukken, aantal_zwarte_stukken], pieces, stuk]
@@ -51,11 +48,18 @@ def gameStaat(stukken, beurt, beurt_van_het_hoogste_niveau):
     punten_wit = 0
     punten_zwart = 0
 
+    vakken_waarde_wit = [[0, 1.1, 0, 1.1, 0, 1.1, 0, 1.2], [1.2, 0, 1.2, 0, 1.2, 0, 1.2, 0], [0, 1.3, 0, 1.3, 0, 1.3, 0, 1.4],
+                         [1.4, 0, 1.2, 0, 1.1, 0, 1.2, 0], [0, 1.2, 0, 1.1, 0, 1.2, 0, 1.4], [1.4, 0, 1.3, 0, 1.3, 0, 1.3, 0],
+                         [0, 1.3, 0, 1.3, 0, 1.3, 0, 1.4], [1.4, 0, 1.4, 0, 1.4, 0, 1.4, 0]]
+    vakken_waarde_zwart = [[1.4, 0, 1.4, 0, 1.4, 0, 1.4, 0], [0, 1.3, 0, 1.3, 0, 1.3, 0, 1.4], [1.4, 0, 1.3, 0, 1.3, 0, 1.3, 0],
+                         [0, 1.2, 0, 1.1, 0, 1.2, 0, 1.4], [1.4, 0, 1.2, 0, 1.1, 0, 1.2, 0], [0, 1.3, 0, 1.3, 0, 1.3, 0, 1.4],
+                         [1.2, 0, 1.2, 0, 1.2, 0, 1.2, 0], [0, 1.1, 0, 1.1, 0, 1.1, 0, 1.2]]
+
     for stuk in stukken:
         if stuk.team:
-            punten_wit += stuk.waarde
+            punten_wit += (stuk.waarde * vakken_waarde_wit[stuk.positie[1]][stuk.positie[0]])
         else:
-            punten_zwart += stuk.waarde
+            punten_zwart += (stuk.waarde * vakken_waarde_zwart[stuk.positie[1]][stuk.positie[0]])
 
     if beurt == beurt_van_het_hoogste_niveau:
         if beurt:
@@ -68,7 +72,7 @@ def gameStaat(stukken, beurt, beurt_van_het_hoogste_niveau):
 
 
 def eindnode(game_over, alleen_sprong, aantal_stukken, beurt):
-    eind = Classes.einde(aantal_stukken[0], aantal_stukken[1])
+    eind = definities.einde(aantal_stukken[0], aantal_stukken[1])
     if eind[0]:
         if eind[1]:
             return [100]
@@ -99,7 +103,7 @@ def besteWaarde(diepte, total_depth, new_value, hoogste_waarde, stuk, richting, 
 
 def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springen, total_depth, hoogste_beurt,
             koning_zetten):
-    alleen_sprong, game_over, stukken_die_kunnen_bewegen, hun_zetten = Classes.watKanJeZetten(board, stukken, beurt,
+    alleen_sprong, game_over, stukken_die_kunnen_bewegen, hun_zetten = definities.watKanJeZetten(board, stukken, beurt,
                                                                                               False)
 
     winst_of_verlies = eindnode(game_over, alleen_sprong, aantal_stukken, beurt)
@@ -107,7 +111,7 @@ def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springe
         return winst_of_verlies
 
     if diepte == 0:
-        if Classes.herhaling(koning_zetten):
+        if definities.herhaling(koning_zetten):
             return [-50]
         return [gameStaat(stukken, beurt, hoogste_beurt)]
 
@@ -143,7 +147,7 @@ def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springe
                     new_new_board[richting[0][0]][richting[0][1]] = stuk, 0, 0
                     stuk.nieuwe_positie(richting[1][1], richting[1][0])
 
-                    nog_een_sprong = Classes.koningStappen(new_new_board, stuk)
+                    nog_een_sprong = definities.koningStappen(new_new_board, stuk)
 
                     if len(nog_een_sprong) > 0:
                         if type(nog_een_sprong[0]) != int:
@@ -151,13 +155,13 @@ def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springe
                             new_value = miniMax(diepte - 1, new_stukken, beurt, new_new_board, aantal_stukken,
                                                 stuk_dat_moet_springen, total_depth, hoogste_beurt, new_koning_zetten)
                         else:
-                            Classes.promoveer(stuk)
+                            definities.promoveer(stuk)
                             stuk_dat_moet_springen = 0
                             new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
                                                 stuk_dat_moet_springen, total_depth, hoogste_beurt, new_koning_zetten)
 
                     else:
-                        Classes.promoveer(stuk)
+                        definities.promoveer(stuk)
                         stuk_dat_moet_springen = 0
                         new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
                                             stuk_dat_moet_springen, total_depth, hoogste_beurt, new_koning_zetten)
@@ -190,8 +194,7 @@ def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springe
 
                     stuk.nieuwe_positie(positie_van_stuk[0], positie_van_stuk[1])
 
-                    Classes.promoveer(stuk)
-                    beurt = Classes.draaiDeBeurt(beurt)
+                    definities.promoveer(stuk)
 
                     betere_waarde = besteWaarde(diepte, total_depth, new_value, hoogste_waarde, stuk, richting, 1)
 
@@ -213,7 +216,7 @@ def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springe
                     new_new_board[richting[1][0]][richting[1][1]], new_new_board[stuk.positie[1]][stuk.positie[0]], \
                     new_new_board[richting[0][0]][richting[0][1]] = stuk, 0, 0
                     stuk.nieuwe_positie(richting[1][1], richting[1][0])
-                    nog_een_sprong = Classes.damZetten(new_new_board, stuk)
+                    nog_een_sprong = definities.damZetten(new_new_board, stuk)
 
                     if len(nog_een_sprong) > 0:
                         if type(nog_een_sprong[0][0]) == list:
@@ -221,13 +224,13 @@ def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springe
                             new_value = miniMax(diepte - 1, new_stukken, beurt, new_new_board, aantal_stukken,
                                                 stuk_dat_moet_springen, total_depth, hoogste_beurt, koning_zetten)
                         else:
-                            Classes.promoveer(stuk)
+                            definities.promoveer(stuk)
                             stuk_dat_moet_springen = 0
                             new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
                                                 stuk_dat_moet_springen, total_depth, hoogste_beurt, koning_zetten)
 
                     else:
-                        Classes.promoveer(stuk)
+                        definities.promoveer(stuk)
                         stuk_dat_moet_springen = 0
                         new_value = miniMax(diepte - 1, new_stukken, not beurt, new_new_board, aantal_stukken,
                                             stuk_dat_moet_springen, total_depth, hoogste_beurt, koning_zetten)
@@ -261,46 +264,36 @@ def miniMax(diepte, stukken, beurt, board, aantal_stukken, stuk_dat_moet_springe
                     betere_waarde = besteWaarde(diepte, total_depth, new_value, hoogste_waarde, stuk, richting, 1)
 
                     if type(betere_waarde) != int:
-                        print(betere_waarde)
                         hoogste_waarde, wat_voor_zet = betere_waarde[0], betere_waarde[1]
                         if len(betere_waarde) > 2:
                             beste_zet = betere_waarde[2]
+
     return [hoogste_waarde, beste_zet, wat_voor_zet]
 
 
-class damAI:
-    def bringUpToDate(self, board, pieces, beurt, moeilijkheidsgraad, wit, zwart, stuk_dat_moet_springen, aantal_koning_zetten):
-        self.board = board
-        self.pieces = pieces
-        self.beurt = beurt
-        self.moeilijkheidsgraad = moeilijkheidsgraad
-        self.aantal_witte_stukken = wit
-        self.aantal_zwarte_stukken = zwart
-        self.stuk_dat_moet_springen = stuk_dat_moet_springen
-        self.aantal_koning_zetten = aantal_koning_zetten
+class DamAI:
+    def __init__(self):
+        pass
 
-    def AIzet(self):
-        if Classes.watKanJeZetten(self.board, self.pieces, self.beurt, False)[1]:
-            pass
-
+    def AIzet(self, board, pieces, beurt, moeilijkheidsgraad, wit, zwart, stuk_dat_moet_springen, aantal_koning_zetten):
         posities_van_de_stukken = []
-        for i in self.pieces:
+        for i in pieces:
             posities_van_de_stukken.append(i.positie.copy())
 
-        new_board = self.board.copy()
-        if self.beurt:
-            aangeraden_zet = miniMax(self.moeilijkheidsgraad, self.pieces, self.beurt, new_board,
-                                     [self.aantal_witte_stukken, self.aantal_zwarte_stukken],
-                                     self.stuk_dat_moet_springen, self.moeilijkheidsgraad, self.beurt, self.aantal_koning_zetten)
+        new_board = board.copy()
+        if beurt:
+            aangeraden_zet = miniMax(moeilijkheidsgraad, pieces, beurt, new_board,
+                                     [wit, zwart],
+                                     stuk_dat_moet_springen, moeilijkheidsgraad, beurt, aantal_koning_zetten)
         else:
-            aangeraden_zet = miniMax(self.moeilijkheidsgraad, self.pieces, self.beurt, new_board,
-                                     [self.aantal_zwarte_stukken, self.aantal_witte_stukken],
-                                     self.stuk_dat_moet_springen, self.moeilijkheidsgraad, self.beurt, self.aantal_koning_zetten)
+            aangeraden_zet = miniMax(moeilijkheidsgraad, pieces, beurt, new_board,
+                                     [zwart, wit],
+                                     stuk_dat_moet_springen, moeilijkheidsgraad, beurt, aantal_koning_zetten)
 
         stuk = aangeraden_zet[1][0]
         nieuwe_plek = aangeraden_zet[1][1]
 
-        return bijwerkenAI(self.board, stuk, self.beurt, nieuwe_plek, aangeraden_zet, self.pieces, self.aantal_witte_stukken, self.aantal_zwarte_stukken)
+        return bijwerkenAI(board, stuk, beurt, nieuwe_plek, aangeraden_zet, pieces, wit, zwart)
 
 
 
