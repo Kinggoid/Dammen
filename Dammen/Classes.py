@@ -113,7 +113,7 @@ def innerLoop():
                                     break
 
                                 if begin_positie not in stukken_die_kunnen_bewegen:
-                                    # Als je een stuk aanklikt dat niet kan bewegen, mag je opnieuw kiezen
+                                    # Als ons gekozen stuk niet kan bewegen, is het beter om dat stuk niet te selecteren
                                     break
 
                                 if stuk_dat_moet_springen != 0 and stuk_dat_moet_springen != begin_positie:
@@ -194,6 +194,7 @@ def innerLoop():
                                             begin_positie.nieuwe_positie(new_x, new_y)
 
                                             board[new_y][new_x], board[oud_y][oud_x] = begin_positie, 0
+
                                             definities.promoveer(begin_positie)
                                             beurt = not beurt
 
@@ -225,14 +226,14 @@ def innerLoop():
                     print('Zwart wint')
                 break
 
+
             # Hieronder sturen we informatie naar een andere file waar de ai berekent wat de beste zet is.
             # Hij update voor ons al het bord, de positie van het stuk en nog een paar andere dingen.
-            try:
-                board, stuk_dat_moet_springen, beurt, [aantal_witte_stukken, aantal_zwarte_stukken], pieces, stuk = \
-                    ai.AIzet(board, pieces, beurt, moeilijkheidsgraad, aantal_witte_stukken, aantal_zwarte_stukken,
-                             stuk_dat_moet_springen, aantal_koning_zetten)
-            except Exception as e:
-                pass
+            ai.upToDate(board, pieces, beurt, moeilijkheidsgraad, aantal_witte_stukken, aantal_zwarte_stukken,
+                         stuk_dat_moet_springen, aantal_koning_zetten)
+
+            board, stuk_dat_moet_springen, beurt, [aantal_witte_stukken, aantal_zwarte_stukken], pieces, stuk = \
+                ai.AIzet()
 
             if stuk.king:
                 aantal_koning_zetten += 1
@@ -254,5 +255,3 @@ def innerLoop():
 
             if definities.herhaling(aantal_koning_zetten):  # En als hij de 15e koning zet heeft gezet is het gelijkspel.
                 break
-
-innerLoop()

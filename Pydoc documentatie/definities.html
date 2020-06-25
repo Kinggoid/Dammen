@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module definities</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>definities</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href="..">index</a><br><a href="file:c%3A%5Cusers%5Cfamil%5Cpycharmprojects%5Cipass%5Cdammen%5Cdefinities.py">c:\users\famil\pycharmprojects\ipass\dammen\definities.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="pygame.html">pygame</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-checkIfFriendly"><strong>checkIfFriendly</strong></a>(board, x, y)</dt><dd><tt>Kijkt&nbsp;of&nbsp;je&nbsp;gekozen&nbsp;vak&nbsp;wel&nbsp;binnen&nbsp;het&nbsp;bord&nbsp;valt&nbsp;en&nbsp;of&nbsp;je&nbsp;een&nbsp;leeg&nbsp;vak&nbsp;hebt&nbsp;geselecteerd</tt></dd></dl>
+ <dl><dt><a name="-damZetten"><strong>damZetten</strong></a>(board, stuk)</dt><dd><tt>Hier&nbsp;kijken&nbsp;we&nbsp;of&nbsp;een&nbsp;man&nbsp;een&nbsp;ander&nbsp;stuk&nbsp;kan&nbsp;pakken&nbsp;(en&nbsp;waar&nbsp;hij&nbsp;landt)&nbsp;en&nbsp;anders&nbsp;krijgen&nbsp;we&nbsp;een&nbsp;lijst&nbsp;met<br>
+andere&nbsp;mogelijke&nbsp;zetten&nbsp;terug</tt></dd></dl>
+ <dl><dt><a name="-diagonaalKoningSpringen"><strong>diagonaalKoningSpringen</strong></a>(board, posities)</dt><dd><tt>In&nbsp;deze&nbsp;definitie&nbsp;kijken&nbsp;we&nbsp;of&nbsp;onze&nbsp;koning&nbsp;nog&nbsp;een&nbsp;keer&nbsp;kan&nbsp;slaan&nbsp;en&nbsp;op&nbsp;welke&nbsp;positie&nbsp;op&nbsp;zijn&nbsp;diagonaal&nbsp;hij&nbsp;kan<br>
+landen&nbsp;om&nbsp;dit&nbsp;te&nbsp;doen.</tt></dd></dl>
+ <dl><dt><a name="-draw_board"><strong>draw_board</strong></a>(board, scherm, lengte_vakje, hoogte_vakje)</dt><dd><tt>In&nbsp;deze&nbsp;definitie&nbsp;tekenen&nbsp;we&nbsp;het&nbsp;bord&nbsp;en&nbsp;de&nbsp;overblijvende&nbsp;stukken</tt></dd></dl>
+ <dl><dt><a name="-einde"><strong>einde</strong></a>(wit, zwart)</dt><dd><tt>In&nbsp;deze&nbsp;definitie&nbsp;kijken&nbsp;we&nbsp;of&nbsp;een&nbsp;kleur&nbsp;al&nbsp;zijn&nbsp;stukken&nbsp;is&nbsp;verloren.&nbsp;In&nbsp;dat&nbsp;geval&nbsp;heeft&nbsp;die&nbsp;kleur&nbsp;verloren</tt></dd></dl>
+ <dl><dt><a name="-herhaling"><strong>herhaling</strong></a>(zetten)</dt></dl>
+ <dl><dt><a name="-juisteStukken"><strong>juisteStukken</strong></a>(stukken, beurt)</dt><dd><tt>Deze&nbsp;definitie&nbsp;haalt&nbsp;alle&nbsp;stukken&nbsp;van&nbsp;dezelfde&nbsp;kleur&nbsp;uit&nbsp;de&nbsp;lijst&nbsp;en&nbsp;geeft&nbsp;dat&nbsp;terug.</tt></dd></dl>
+ <dl><dt><a name="-koningStappen"><strong>koningStappen</strong></a>(board, stuk)</dt><dd><tt>Hier&nbsp;kijken&nbsp;we&nbsp;van&nbsp;een&nbsp;bepaalde&nbsp;koning&nbsp;of&nbsp;hij&nbsp;iemand&nbsp;kan&nbsp;pakken&nbsp;(dan&nbsp;krijg&nbsp;je&nbsp;het&nbsp;hele&nbsp;diagonaal&nbsp;daarachter&nbsp;mee.<br>
+en&nbsp;anders&nbsp;waar&nbsp;hij&nbsp;met&nbsp;normale&nbsp;stappen&nbsp;naartoe&nbsp;kan&nbsp;gaan.</tt></dd></dl>
+ <dl><dt><a name="-promoveer"><strong>promoveer</strong></a>(stuk)</dt><dd><tt>Met&nbsp;deze&nbsp;definitie&nbsp;promoveren&nbsp;we&nbsp;een&nbsp;stuk.</tt></dd></dl>
+ <dl><dt><a name="-setup"><strong>setup</strong></a>()</dt><dd><tt>In&nbsp;deze&nbsp;definitie&nbsp;maken&nbsp;we&nbsp;het&nbsp;bord.&nbsp;Ik&nbsp;maak&nbsp;een&nbsp;8&nbsp;x&nbsp;8&nbsp;bord&nbsp;omdat&nbsp;dat&nbsp;de&nbsp;meest&nbsp;populaire&nbsp;variant&nbsp;is.</tt></dd></dl>
+ <dl><dt><a name="-stukken"><strong>stukken</strong></a>(spelbord)</dt><dd><tt>In&nbsp;deze&nbsp;definitie&nbsp;maken&nbsp;we&nbsp;alle&nbsp;damstenen&nbsp;aan&nbsp;en&nbsp;we&nbsp;zetten&nbsp;die&nbsp;vervolgens&nbsp;op&nbsp;het&nbsp;bord</tt></dd></dl>
+ <dl><dt><a name="-stukkenBijhouden"><strong>stukkenBijhouden</strong></a>(wit, zwart, stuk)</dt><dd><tt>Als&nbsp;een&nbsp;stuk&nbsp;wordt&nbsp;gepakt&nbsp;gaat&nbsp;het&nbsp;aantal&nbsp;zwarte&nbsp;of&nbsp;witte&nbsp;stukken&nbsp;omlaag&nbsp;met&nbsp;1</tt></dd></dl>
+ <dl><dt><a name="-watKanJeZetten"><strong>watKanJeZetten</strong></a>(board, stukken, beurt, kan_je_pakken)</dt></dl>
+</td></tr></table>
+</body></html>
