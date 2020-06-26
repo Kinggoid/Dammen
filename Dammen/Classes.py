@@ -255,3 +255,4 @@ def innerLoop():
 
             if definities.herhaling(aantal_koning_zetten):  # En als hij de 15e koning zet heeft gezet is het gelijkspel.
                 break
+

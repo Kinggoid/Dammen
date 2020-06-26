@@ -1,0 +1,32 @@
+Hier leg ik uit hoe je mijn code kan gebruiken vanuit het perspectief van een gebruiker.
+
+- Je gaat naar de file 'Classes.py' en runt die code (ctrl + shift + f10) (of met de 'run' knop).
+- Dan krijg je beneden in de terminal een stuk tekst te zien waar het programma vraagt of je tegen de computer of tegen
+een andere speler (of jezelf) wilt spelen. Typ 'y' of 'Y' om tegen de ai te spelen en 'n' of 'N' om dit niet te doen.
+- Als je niet tegen de ai wilt spelen en 'n' of 'N' hebt ingevuld, wordt het programma opgestart en moet je op het nieuwe
+icoontje in je taskbar klikken. Dan opent de game en kan je beginnen met spelen!
+- Anders krijg je weer een nieuwe vraag binnen in de terminal waar ze vragen op welke moeilijkheidsgraad je wilt spelen.
+Hoe moeilijker de moeilijkheidsgraad hoe verder het algoritme in de toekomst kijkt (en hoe langer het duurt om een zet
+te bedenken).
+- Ook krijg je dan de keuze als welk team je wil spelen. Let op, wit begint!
+
+Regels:
+De normale stukken waar je mee begint heten dammen of mannen. Deze stukken kunnen alleen schuin één stap naar voren bewegen.
+In het spel doe je dit door op je stuk te klikken en dan te slepen naar waar je hem wil plaatsen. Als er een muur of een
+vriendelijk stuk voor hen staat kunnen ze hier niet naartoe. Als je een stuk van het andere team tegenkomt (één schuin
+vakje voor of achter je verwijderd) en het vakje achter hem leeg is. Moet je dit stuk slaan. Dit doe je door jouw
+dam aan te klikken en dan op het lege vakje achter de vijandelijke dam te slepen. Wanneer je dit doet zal deze dam van
+het bord verwijderd worden. Als je vervolgens nog een keer met ditzelfde stuk kan slaan, moet je dit doen.
+
+Wanneer je met je dam de overkant of de 'Kingsrow' bereikt, wordt jouw dam gepromoveerd naar een koning. Een koning
+kan over het hele diagonaal (nog steeds schuin dus) bewegen. Het bewegen van een koning gebeurd op dezelfde wijze als
+wanneer je een dam beweegt, alleen kan een koning overal op het diagonaal landen. Als de koning ergens op zijn diagonaal
+een stuk van het andere team ziet en er is minstens één leeg vak direct achter dit vak ligt, moet je dit stuk pakken.
+Maar de koning mag (in tegenstelling tot de dam) op elk leeg vakje na dit stuk landen (tenzij je een ander stuk of de
+muur tegenkomt, hier moet je voor landen). Maar als je op één van deze vakjes kan landen en vervolgens nog een stuk kan
+pakken, moet je op zo'n vak landen. Dus ook voor de koning geldt dat je vaker moet pakken wanneer dit kan. De stukken
+waar je overheen springt zullen ook weer verwijderd worden van het bord.
+
+Je wint het spel wanneer het andere team geen stukken meer heeft, of als al zijn stukken niet meer kunnen bewegen.
+Overigens is het ook handig om te melden dat als jij en je tegenstander samen achter elkaar 15 alleen maar jullie koningen
+verzetten, het gelijkspel wordt verklaard.
