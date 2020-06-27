@@ -15,27 +15,33 @@ def stukken(spelbord):
     """
     In deze definitie maken we alle damstenen aan en we zetten die vervolgens op het bord
     """
-    w1 = Damsteen(3, 0, 'wit')
-    w2 = Damsteen(1, 2, 'wit')
-    w3 = Damsteen(0, 3, 'wit')
-    w4 = Damsteen(3, 2, 'wit')
-    w5 = Damsteen(5, 6, 'wit')
-    w6 = Damsteen(6, 1, 'wit')
+    w1 = Damsteen(1, 0, 'wit')
+    w2 = Damsteen(3, 0, 'wit')
+    w3 = Damsteen(5, 0, 'wit')
+    w4 = Damsteen(7, 0, 'wit')
+    w5 = Damsteen(0, 1, 'wit')
+    w6 = Damsteen(2, 1, 'wit')
     w7 = Damsteen(4, 1, 'wit')
-    w8 = Damsteen(2, 7, 'wit')
-    w9 = Damsteen(4, 7, 'wit')
-    promoveer(w8)
-    promoveer(w9)
+    w8 = Damsteen(6, 1, 'wit')
+    w9 = Damsteen(1, 2, 'wit')
+    w10 = Damsteen(3, 2, 'wit')
+    w11 = Damsteen(5, 2, 'wit')
+    w12 = Damsteen(7, 2, 'wit')
 
-    z1 = Damsteen(5, 0, 'zwart')
-    promoveer(z1)
-    z2 = Damsteen(7, 2, 'zwart')
-    z3 = Damsteen(5, 2, 'zwart')
-    z4 = Damsteen(0, 7, 'zwart')
-    z5 = Damsteen(7, 6, 'zwart')
+    z1 = Damsteen(0, 7, 'wit')
+    z2 = Damsteen(2, 7, 'wit')
+    z3 = Damsteen(4, 7, 'wit')
+    z4 = Damsteen(6, 7, 'wit')
+    z5 = Damsteen(1, 6, 'wit')
+    z6 = Damsteen(3, 6, 'wit')
+    z7 = Damsteen(5, 6, 'wit')
+    z8 = Damsteen(7, 6, 'wit')
+    z9 = Damsteen(0, 5, 'wit')
+    z10 = Damsteen(2, 5, 'wit')
+    z11 = Damsteen(4, 5, 'wit')
+    z12 = Damsteen(6, 5, 'wit')
 
-
-    alle_stenen = [w1, w2, w3, w4, w5, w6, w7, w8, w9,  z1, z2, z3, z4, z5]
+    alle_stenen = [w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12]
     posities = []
 
     for steen in alle_stenen:  # Pakt van elke steen zijn positie
